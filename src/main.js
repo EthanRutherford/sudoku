@@ -8,6 +8,7 @@ const Menu = require("./ui/menu");
 const Game = require("./ui/game");
 const Results = require("./ui/results");
 const ComingSoon = require("./ui/coming-soon");
+require("./view-height");
 require("./styles/reset");
 require("./styles/root");
 

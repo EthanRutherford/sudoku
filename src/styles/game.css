@@ -4,12 +4,9 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	position: fixed;
-	top: calc(50% + var(--header-size) / 2);
-	left: 50%;
-	transform: translate(-50%, -50%);
+	margin: auto;
 	max-width: 100vw;
-	max-height: calc(100vh - var(--header-size));
+	max-height: calc(var(--view-height) - var(--header-size));
 }
 
 .board {
@@ -174,8 +171,8 @@
 		width: 145vh;
 	}
 	.board {
-		width: calc(100vh - var(--header-size));
-		height: calc(100vh - var(--header-size));
+		width: calc(var(--view-height) - var(--header-size));
+		height: calc(var(--view-height) - var(--header-size));
 		max-width: calc(100vw - 33vh);
 		max-height: calc(100vw - 33vh);
 	}
@@ -184,20 +181,20 @@
 		grid-template-rows: repeat(6, 1fr);
 		grid-auto-flow: column;
 		width: 33vh;
-		height: calc(100vh - var(--header-size));
+		height: calc(var(--view-height) - var(--header-size));
 	}
 }
 
 @media (orientation: portrait) {
 	.game {
 		flex-direction: column;
-		height: 100vh;
+		height: var(--view-height);
 	}
 	.board {
 		width: calc(100vw);
 		height: calc(100vw);
-		max-width: calc(100vh - 33vw - var(--header-size));
-		max-height: calc(100vh - 33vw - var(--header-size));
+		max-width: calc(var(--view-height) - 33vw - var(--header-size));
+		max-height: calc(var(--view-height) - 33vw - var(--header-size));
 	}
 	.controls {
 		grid-template-columns: repeat(6, 1fr);
