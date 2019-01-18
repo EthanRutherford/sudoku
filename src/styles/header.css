@@ -1,0 +1,59 @@
+@import "./variables.css";
+
+.header {
+	position: sticky;
+	top: 0;
+	border-bottom: 2px solid var(--slate);
+	height: var(--header-size);
+	background-color: var(--grey);
+}
+
+.content {
+	display: flex;
+	align-items: center;
+	margin: auto;
+	width: var(--standard-width);
+	min-width: var(--standard-min-width);
+	height: 100%;
+	color: white;
+}
+
+.back {
+	position: relative;
+	margin-right: 20px;
+	width: 17.3px;
+	height: 20px;
+}
+.back:before {
+	content: "";
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	border-style: solid;
+	border-width: 10px 17.3px 10px 0;
+	border-color: transparent var(--carbon) transparent transparent;
+	width: 0;
+	height: 0;
+}
+.back:after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	border-style: solid;
+	border-width: 10px 17.3px 10px 0;
+	border-color: transparent white transparent transparent;
+	width: 0;
+	height: 0;
+}
+.back:active:after {
+	top: 1px;
+	left: 1px;
+	border-right-color: var(--not-white);
+}
+
+.title {
+	font-size: var(--large);
+	color: white;
+	text-shadow: 2px 2px var(--carbon);
+}

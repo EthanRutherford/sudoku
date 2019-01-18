@@ -1,0 +1,44 @@
+@import "./variables.css";
+
+.menu {
+	margin: auto;
+	padding-top: 20px;
+	width: var(--standard-width);
+	min-width: var(--standard-min-width);
+}
+
+.columns {
+	display: flex;
+}
+
+.column {
+	display: flex;
+	flex-direction: column;
+}
+.column:not(:last-child) {
+	margin-right: 20px;
+}
+
+.button {
+	border: 2px outset var(--grey);
+	padding: 10px;
+	height: 50px;
+	width: 120px;
+	background-color: var(--slate);
+	color: white;
+	text-align: center;
+	text-shadow: 2px 2px var(--carbon);
+}
+.button:hover:not(:disabled) {
+	background-color: var(--slate-light);
+}
+.button:active:not(:disabled) {
+	border-style: inset;
+	background-color: var(--slate-dark);
+}
+.button:disabled {
+	filter: brightness(.5);
+}
+.button:not(:last-child) {
+	margin-bottom: 10px;
+}

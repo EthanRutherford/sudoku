@@ -1,0 +1,209 @@
+@import "./variables.css";
+
+.game {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: fixed;
+	top: calc(50% + var(--header-size) / 2);
+	left: 50%;
+	transform: translate(-50%, -50%);
+	max-width: 100vw;
+	max-height: calc(100vh - var(--header-size));
+}
+
+.board {
+	display: grid;
+	grid-template-columns: repeat(8, 1fr) minmax(calc(100% / 9), auto);
+	grid-template-rows: repeat(8, 1fr) minmax(calc(100% / 9), auto);
+	border: 4px solid var(--carbon);
+	user-select: none;
+}
+
+.cell {
+	display: flex;
+    align-items: center;
+	justify-content: center;
+	position: relative;
+	background-color: white;
+	font-size: 6vmin;
+	line-height: 0;
+	overflow: hidden;
+}
+.cell:not(:nth-child(9n)) {
+	border-right: 1px solid var(--carbon);
+}
+.cell:not(:nth-last-child(-n+9)) {
+	border-bottom: 1px solid var(--carbon);
+}
+.cell:nth-child(3n + 1) {
+	border-left: 1px solid var(--carbon);
+}
+.cell:nth-child(n+28):not(:nth-child(n+37)),
+.cell:nth-child(n+55):not(:nth-child(n+64)) {
+	border-top: 1px solid var(--carbon);
+}
+
+.initial-value {
+	font-weight: bold;
+	background-color: var(--ash);
+}
+
+.selected-index:before {
+	content: "";
+	position: absolute;
+	box-sizing: border-box;
+	width: calc(100%);
+	height: calc(100%);
+	border: 3px solid var(--carbon);
+}
+.selected-index:nth-child(3n):before {
+	border-right-width: 2px;
+}
+.selected-index:nth-child(3n+1):before {
+	border-left-width: 2px;
+}
+.selected-index:nth-child(n+19):not(:nth-child(n+28)):before,
+.selected-index:nth-child(n+46):not(:nth-child(n+55)):before {
+	border-bottom-width: 2px;
+}
+.selected-index:nth-child(n+28):not(:nth-child(n+37)):before,
+.selected-index:nth-child(n+55):not(:nth-child(n+64)):before {
+	border-top-width: 2px;
+}
+.selected-index:nth-child(-n+9):before {
+	border-top-width: 0;
+}
+.selected-index:nth-last-child(-n+9):before {
+	border-bottom-width: 0;
+}
+.selected-index:nth-child(9n):before {
+	border-right-width: 0;
+}
+.selected-index:nth-child(9n+1):before {
+	border-left-width: 0;
+}
+
+.hovered-neighbors {
+	background-color: var(--steel);
+}
+.hovered-neighbors.initial-value {
+	background-color: var(--steel-grey);
+}
+
+.cell.hovered-value {
+	background-color: var(--green-steel-light);
+	color: var(--green-steel)
+}
+
+.cell.error {
+	background-color: var(--red-light);
+}
+
+.note-1, .note-2, .note-3, .note-4, .note-5,
+.note-6, .note-7, .note-8, .note-9 {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: absolute;
+	width: calc(100% / 3);
+	height: calc(100% / 3);
+	color: var(--green);
+	font-size: 3vmin;
+	font-weight: bold;
+}
+.note-1, .note-2, .note-3 {
+	top: 0;
+}
+.note-4, .note-5, .note-6 {
+	top: calc(100% / 3);
+}
+.note-7, .note-8, .note-9 {
+	top: calc(200% / 3);
+}
+.note-1, .note-4, .note-7 {
+	left: 0;
+}
+.note-2, .note-5, .note-8 {
+	left: calc(100% / 3);
+}
+.note-3, .note-6, .note-9 {
+	left: calc(200% / 3);
+}
+
+.controls {
+	display: grid;
+}
+
+.button {
+	position: relative;
+	border: .5vmin outset var(--grey);
+	background-color: var(--slate);
+	color: white;
+	font-size: 8vmin;
+	text-shadow: .5vmin .5vmin var(--carbon);
+}
+.button:hover:not(:disabled) {
+	background-color: var(--slate-light);
+}
+.button:active:not(:disabled) {
+	border-style: inset;
+	background-color: var(--slate-dark);
+}
+.button:disabled {
+	filter: brightness(.5);
+}
+.pencil-active {
+	color: var(--green);
+}
+.mode-button {
+	font-size: 4vmin;
+}
+
+.remaining-count {
+	position: absolute;
+	top: 10%;
+	right: 10%;
+	font-size: 3.5vmin;
+	text-shadow: .25vmin .25vmin var(--carbon);
+}
+
+@media (orientation: landscape) {
+	.game {
+		flex-direction: row;
+		width: 145vh;
+	}
+	.board {
+		width: calc(100vh - var(--header-size));
+		height: calc(100vh - var(--header-size));
+		max-width: calc(100vw - 33vh);
+		max-height: calc(100vw - 33vh);
+	}
+	.controls {
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: repeat(6, 1fr);
+		grid-auto-flow: column;
+		width: 33vh;
+		height: calc(100vh - var(--header-size));
+	}
+}
+
+@media (orientation: portrait) {
+	.game {
+		flex-direction: column;
+		height: 100vh;
+	}
+	.board {
+		width: calc(100vw);
+		height: calc(100vw);
+		max-width: calc(100vh - 33vw - var(--header-size));
+		max-height: calc(100vh - 33vw - var(--header-size));
+	}
+	.controls {
+		grid-template-columns: repeat(6, 1fr);
+		grid-template-rows: 1fr 1fr;
+		grid-auto-flow: row;
+		width: 100vw;
+		height: 33vw;
+	}
+}

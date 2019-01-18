@@ -1,0 +1,26 @@
+{
+  "name": "sudoku",
+  "version": "1.0.0",
+  "main": "don't be daft",
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "scripts": {
+    "build": "webpack --env prod",
+    "watch": "start webpack --watch",
+    "start": "start webpack-dev-server",
+    "test": "node test"
+  },
+  "dependencies": {
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "react-jenny": "^1.1.0"
+  },
+  "devDependencies": {
+    "css-loader": "^2.1.0",
+    "mini-css-extract-plugin": "^0.5.0",
+    "webpack": "^4.28.3",
+    "webpack-cli": "^3.2.0",
+    "webpack-dev-server": "^3.1.14"
+  }
+}
