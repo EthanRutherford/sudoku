@@ -48,16 +48,16 @@ class App extends Component {
 	requestPuzzle(difficulty) {
 		requestPuzzle(difficulty).then((puzzle) => this.setState({
 			page: PAGES.game,
+			difficulty,
 			puzzle,
 		}));
 
-		this.setState({difficulty});
 		storeDifficulty(difficulty);
 
 		// show loading screen if we don't get a puzzle quick enough
 		setTimeout(() => {
 			if (this.state.page !== PAGES.game) {
-				this.setState({page: PAGES.loading});
+				this.setState({page: PAGES.loading, difficulty});
 			}
 		}, 400);
 	}
