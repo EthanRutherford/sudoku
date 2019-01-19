@@ -4,7 +4,7 @@ const difficulties = ["easy", "medium", "hard", "expert"];
 
 function openDatabase() {
 	return new Promise((resolve, reject) => {
-		const request = indexedDB.open("sudoku", 1);
+		const request = indexedDB.open("sudoku", 2);
 
 		request.onupgradeneeded = function(event) {
 			const database = event.target.result;
@@ -80,14 +80,19 @@ function countPuzzles(db, difficulty) {
 }
 
 // create a puzzle, and place it in the appropriate difficulty list
-async function createPuzzle(db) {
-	const difficultyLevels = [0, 3, 7, Infinity];
-	const {puzzle, difficulty} = makePuzzle();
+async function createPuzzle(db, counts) {
+	const difficultyLevels = [0, 2, 5, Infinity];
+
+	// use high number of iterations if we're only lacking expert,
+	// or on random occassions otherwise
+	const expertBehind = counts[0] > 10 && counts[1] > 10 && counts[2] > 10;
+	const iterations = expertBehind || Math.random() > .75 ? 200 : 25;
+	const {puzzle, difficulty} = makePuzzle(iterations);
 
 	for (let i = 0; i < difficulties.length; i++) {
 		const level = difficultyLevels[i];
 		const name = difficulties[i];
-		if (difficulty <= level && await countPuzzles(db, name) < 100) {
+		if (difficulty <= level && counts[i] < 100) {
 			await storePuzzle(db, name, puzzle);
 			break;
 		}
@@ -105,7 +110,7 @@ async function checkForEmptyDifficulty(db) {
 	));
 
 	if (counts.some((count) => count < 10)) {
-		await createPuzzle(db);
+		await createPuzzle(db, counts);
 	}
 
 	const aListWasEmpty = counts.includes(0);

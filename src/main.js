@@ -54,15 +54,16 @@ class App extends Component {
 		this.goBack = this.goBack.bind(this);
 	}
 	requestPuzzle(difficulty) {
-		this.loadStartTime = Date.now();
 		this.generator.postMessage(difficulty);
-		this.setState({
-			page: PAGES.loading,
-			difficulty,
-			puzzle: null,
-		});
+		this.setState({difficulty});
 
 		storeDifficulty(difficulty);
+
+		setTimeout(() => {
+			if (this.state.page !== PAGES.game) {
+				this.setState({page: PAGES.loading});
+			}
+		}, 500);
 	}
 	resumePuzzle(difficulty, puzzle, initialAnswers, initialNotes, initialTime) {
 		this.setState({
@@ -101,21 +102,19 @@ class App extends Component {
 			score,
 		} = this.state;
 
-		if (
-			page === PAGES.loading &&
-			Date.now() - this.loadStartTime > 500
-		) {
+		if (page === PAGES.loading) {
 			// lol this is really dumb but kinda fun :)
 			requestAnimationFrame(() => this.forceUpdate());
 
 			const fakepuzzle = [];
 			for (let i = 0; i < 81; i++) {
-				fakepuzzle.push(Math.floor(Math.random() * 10) || null);
+				const value = Math.floor(Math.random() * 18);
+				fakepuzzle.push(value > 8 ? null : value + 1);
 			}
 
 			return [
 				j([Header, {difficulty: difficulty, key: 1}]),
-				j([Game, {puzzle: fakepuzzle, key: 2}]),
+				j([Game, {puzzle: fakepuzzle, fake: true, key: "fake"}]),
 			];
 		}
 

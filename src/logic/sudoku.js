@@ -97,33 +97,40 @@ function getPotentials(board, index) {
 	return potentials;
 }
 
-function findBestSet(board) {
-	const sets = [];
-	// add all non-full rows
-	for (const row of rowMap) {
-		const set = row.filter((index) => board.values[index] == null);
-		if (set.length > 1) {
-			sets.push(set);
+function findBestCandidates(board, remaining, score) {
+	let rows = [[], [], [], [], [], [], [], [], []];
+	let columns = [[], [], [], [], [], [], [], [], []];
+	let boxes = [[], [], [], [], [], [], [], [], []];
+
+	let cellCandidates = new Array(10);
+	for (const index of remaining) {
+		rows[indexToRow[index]].push(index);
+		columns[indexToColumn[index]].push(index);
+		boxes[indexToBox[index]].push(index);
+
+		const potentials = board.potentials[index];
+		if (potentials.size < cellCandidates.length) {
+			// early out: a cell with no potentials means the board is invalid
+			if (potentials.size === 0) {
+				return null;
+			}
+
+			cellCandidates = potentials.values.map((value) => ({index, value}));
+
+			// if score is already > 0 and we find a single, return early
+			if (score > 0 && cellCandidates.length === 1) {
+				return {candidates: cellCandidates, cost: 1};
+			}
 		}
 	}
 
-	// add all non-full columns
-	for (const column of columnMap) {
-		const set = column.filter((index) => board.values[index] == null);
-		if (set.length > 1) {
-			sets.push(set);
-		}
-	}
+	rows = rows.filter((x) => x.length);
+	columns = columns.filter((x) => x.length);
+	boxes = boxes.filter((x) => x.length);
 
-	// add all non-full boxes
-	for (const box of boxMap) {
-		const set = box.filter((index) => board.values[index] == null);
-		if (set.length > 1) {
-			sets.push(set);
-		}
-	}
+	const sets = rows.concat(columns).concat(boxes);
 
-	let best;
+	let setCandidates = new Array(10);
 	for (const set of sets) {
 		const valueMap = set.reduce((m, index) => {
 			for (const value of board.potentials[index].values) {
@@ -138,13 +145,23 @@ function findBestSet(board) {
 		}, new Map());
 
 		for (const [value, indices] of valueMap.entries()) {
-			if (best == null || indices.size < best.size) {
-				best = indices.map((index) => ({index, value}));
+			if (indices.length < setCandidates.length) {
+				setCandidates = indices.map((index) => ({index, value}));
+
+				if (setCandidates.length === 1) {
+					return {candidates: setCandidates, cost: 0};
+				}
 			}
 		}
 	}
 
-	return best;
+	return cellCandidates.length < setCandidates.length ? {
+		candidates: cellCandidates,
+		cost: 1,
+	} : {
+		candidates: setCandidates,
+		cost: 0,
+	};
 }
 
 function solveRecursive(board, remaining, score, solveData) {
@@ -165,30 +182,15 @@ function solveRecursive(board, remaining, score, solveData) {
 		return true;
 	}
 
-	// find best cell
-	let candidates;
-	for (const index of remaining) {
-		const potentials = board.potentials[index];
-		if (candidates == null || potentials.size < candidates.length) {
-			// early out: no potentials means the board is invalid
-			if (potentials.size === 0) {
-				return false;
-			}
+	const searchResult = findBestCandidates(board, remaining, score);
 
-			candidates = potentials.values.map((value) => ({index, value}));
-		}
+	// board is not solvable from current position
+	if (searchResult == null) {
+		return false;
 	}
 
-	// if the cell has more than one possible value,
-	// check for any value that has fewer possible
-	// positions within a row, column, or box
-	if (candidates.length > 1) {
-		const set = findBestSet(board);
-		if (set && set.length < candidates.length) {
-			score = Math.max(score, 1);
-			candidates = set;
-		}
-	}
+	const {candidates, cost} = searchResult;
+	score = Math.max(score, cost);
 
 	// if there's more than one branch, the score is at least a 2
 	if (candidates.length > 1) {
@@ -290,38 +292,45 @@ function createSolution() {
 	return solveBoard(board).board;
 }
 
-function punchHoles(solution) {
-	let board = solution.clone();
-	let difficulty = 0;
+function punchHoles(solution, iterations) {
+	let bestDifficulty = 0;
+	let bestHoles = 0;
+	let bestBoard = solution.clone();
 
-	// create pairs we can try to punch out.
-	// pairs are defined as a cell index i, which is reflected
-	// about the center as 80 - i. The center (40), is
-	// therefore paired with itself.
-	const pairs = new Array(41).fill(0).map((_, i) => i);
+	for (let i = 0; i < iterations; i++) {
+		const board = bestBoard.clone();
+		for (let j = 0; j < 18; j++) {
+			const index = Math.floor(Math.random() * 41);
+			const mirror = 80 - index;
 
-	// randomly pick pairs and punches them out.
-	// if the solution is still unique, accept the change,
-	// else discard the change and try another pair.
-	while (pairs.length !== 0) {
-		const index = popRand(pairs);
-		const nextBoard = board.clone();
-		nextBoard.values[index] = null;
-		nextBoard.values[80 - index] = null;
+			if (Math.random() < .5) {
+				board.values[index] = solution.values[index];
+				board.values[mirror] = solution.values[mirror];
+			} else {
+				board.values[index] = null;
+				board.values[mirror] = null;
+			}
 
-		const result = solveBoard(nextBoard, true);
-		if (result.isUnique) {
-			board = nextBoard;
-			difficulty = result.difficulty;
+			const result = solveBoard(board, true);
+			const holes = board.values.reduce((t, v) => t + (v == null ? 1 : 0), 0);
+
+			if (
+				result.isUnique &&
+				(result.difficulty > bestDifficulty || holes > bestHoles)
+			) {
+				bestDifficulty = result.difficulty;
+				bestHoles = holes;
+				bestBoard = board.clone();
+			}
 		}
 	}
 
-	return {board, difficulty};
+	return {board: bestBoard, difficulty: bestDifficulty};
 }
 
-function makePuzzle() {
+function makePuzzle(iterations = 25) {
 	const solution = createSolution();
-	const {board, difficulty} = punchHoles(solution);
+	const {board, difficulty} = punchHoles(solution, iterations);
 
 	return {puzzle: board.values, difficulty};
 }

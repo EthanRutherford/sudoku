@@ -170,16 +170,18 @@ module.exports = class Game extends Component {
 			noteMode: false,
 		};
 
-		// set up timer
-		this.endTimer = startTimer(this.props.initialTime);
+		if (!this.props.fake) {
+			// set up timer
+			this.endTimer = startTimer(this.props.initialTime);
 
-		// save current game board
-		storePuzzle(this.props.puzzle);
-		storeAnswers(answers);
-		storeNotes(notes);
+			// save current game board
+			storePuzzle(this.props.puzzle);
+			storeAnswers(answers);
+			storeNotes(notes);
 
-		// store solution
-		this.solution = solvePuzzle(this.props.puzzle);
+			// store solution
+			this.solution = solvePuzzle(this.props.puzzle);
+		}
 
 		this.gameRef = createRef();
 		this.handleDocClick = this.handleDocClick.bind(this);
