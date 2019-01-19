@@ -24,6 +24,7 @@
 	--carbon: hsl(0, 0%, 12%);
 
 	/* greens */
+	--green-light: hsl(120, 75%, 40%);
 	--green: hsl(120, 100%, 25%);
 
 	/* bluegreens */

@@ -151,7 +151,7 @@
 	filter: brightness(.5);
 }
 .pencil-active {
-	color: var(--green);
+	color: var(--green-light);
 }
 .mode-button {
 	font-size: 4vmin;
