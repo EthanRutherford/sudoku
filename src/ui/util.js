@@ -35,7 +35,7 @@ function prettifyTime(milliseconds) {
 
 	// if someone needs more than just hours, god help them
 	const hourString = hours === 0 ? "" : `${hours}h `;
-	const secondsString = `:${seconds > 10 ? "" : "0"}${seconds}`;
+	const secondsString = `:${seconds > 9 ? "" : "0"}${seconds}`;
 	return `${hourString}${minutes}${secondsString}`;
 }
 
