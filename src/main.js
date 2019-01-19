@@ -1,6 +1,7 @@
 const {Component} = require("react");
 const {render} = require("react-dom");
 const j = require("react-jenny");
+const requestPuzzle = require("./generator/request-puzzle");
 const {storeDifficulty} = require("./logic/game-store");
 const {saveHighScore} = require("./logic/high-scores");
 const Header = require("./ui/header");
@@ -37,15 +38,6 @@ class App extends Component {
 
 		this.state = {...INITIAL_STATE};
 
-		// set up the sudoku generator worker
-		this.generator = new Worker("/dist/worker.js");
-		this.generator.onmessage = (event) => {
-			this.setState({
-				page: PAGES.game,
-				puzzle: event.data,
-			});
-		};
-
 		this.requestPuzzle = this.requestPuzzle.bind(this);
 		this.resumePuzzle = this.resumePuzzle.bind(this);
 		this.winGame = this.winGame.bind(this);
@@ -54,16 +46,20 @@ class App extends Component {
 		this.goBack = this.goBack.bind(this);
 	}
 	requestPuzzle(difficulty) {
-		this.generator.postMessage(difficulty);
-		this.setState({difficulty});
+		requestPuzzle(difficulty).then((puzzle) => this.setState({
+			page: PAGES.game,
+			puzzle,
+		}));
 
+		this.setState({difficulty});
 		storeDifficulty(difficulty);
 
+		// show loading screen if we don't get a puzzle quick enough
 		setTimeout(() => {
 			if (this.state.page !== PAGES.game) {
 				this.setState({page: PAGES.loading});
 			}
-		}, 500);
+		}, 400);
 	}
 	resumePuzzle(difficulty, puzzle, initialAnswers, initialNotes, initialTime) {
 		this.setState({

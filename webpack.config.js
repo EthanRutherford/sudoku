@@ -24,7 +24,7 @@ module.exports = (env) => [
 		devServer: {open: true, publicPath: "/dist", port: 8081},
 	},
 	{
-		entry: "./src/worker.js",
+		entry: "./src/generator/worker.js",
 		output: {filename: "worker.js"},
 		target: "webworker",
 		mode: env === "prod" ? "production" : "development",
