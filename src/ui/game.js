@@ -225,20 +225,24 @@ module.exports = class Game extends Component {
 		} else if (selectedIndex != null) {
 			event.preventDefault();
 
-			if (
+			if (event.key === "Tab") {
+				if (event.shiftKey) {
+					this.setSelectedIndex(Math.max(selectedIndex - 1, 0));
+				} else {
+					this.setSelectedIndex(Math.min(selectedIndex + 1, 80));
+				}
+			} else if (
 				event.key === "ArrowLeft" ||
-				event.key.toLowerCase() === "a" ||
-				(event.key === "Tab" && event.shiftKey)
+				event.key.toLowerCase() === "a"
 			) {
-				if (selectedIndex > 0) {
+				if (selectedIndex % 9 > 0) {
 					this.setSelectedIndex(selectedIndex - 1);
 				}
 			} else if (
 				event.key === "ArrowRight" ||
-				event.key.toLowerCase() === "d" ||
-				event.key === "Tab"
+				event.key.toLowerCase() === "d"
 			) {
-				if (selectedIndex < 80) {
+				if (selectedIndex % 9 < 8) {
 					this.setSelectedIndex(selectedIndex + 1);
 				}
 			} else if (
