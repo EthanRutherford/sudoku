@@ -51,8 +51,6 @@ module.exports = function Results(props) {
 		({score, date}, index) => ({index, score, date}),
 	).slice(start, end);
 
-	console.log(start);
-
 	return j({div: styles.results}, [
 		j({h2: {className: styles.title}}, message),
 		j({ul: styles.list}, [
@@ -73,11 +71,11 @@ module.exports = function Results(props) {
 			j({button: {
 				className: styles.button,
 				onClick: () => props.requestPuzzle(props.difficulty),
-			}}, "Play again"),
+			}}, "play again"),
 			j({button: {
 				className: styles.button,
 				onClick: props.goBack,
-			}}, "Main menu"),
+			}}, "main menu"),
 		]),
 	]);
 };

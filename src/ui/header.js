@@ -11,7 +11,7 @@ module.exports = class Header extends Component {
 			}}),
 			j({span: styles.title}, [
 				"Sudoku",
-				this.props.difficulty && `: ${this.props.difficulty}`,
+				this.props.difficulty && ` - ${this.props.difficulty}`,
 			]),
 		]));
 	}
