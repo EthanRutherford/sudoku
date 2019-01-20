@@ -197,14 +197,19 @@ function solveRecursive(board, remaining, score, solveData) {
 		score = (score === 0 ? 1 : score) + candidates.length - 1;
 	}
 
+	// if there's only one candidate, there's no need to make copies
+	// backtracking will skip past this anyway, so no need to waste
+	// cycles allocating new memory and copying values
+	const skipCopy = candidates.length === 1;
+
 	// recursively attempt filling the board with possible values
 	while (candidates.length !== 0) {
 		const {index, value} = popRand(candidates);
 
 		// create new board with filled in value and updated potentials
-		const nextBoard = board.clone();
+		const nextBoard = skipCopy ? board : board.clone();
 		nextBoard.values[index] = value;
-		const nextRemaining = new Set(remaining);
+		const nextRemaining = skipCopy ? remaining : new Set(remaining);
 		nextRemaining.delete(index);
 
 		for (const neighbor of getNeighbors(index)) {
@@ -243,7 +248,7 @@ function solveBoard(board, checkUnique = false) {
 
 	// begin solving
 	const solveData = {checkUnique, score: null, board: null, isUnique: true};
-	solveRecursive(board, remaining, 0, solveData);
+	solveRecursive(board.clone(), remaining, 0, solveData);
 	return {
 		board: solveData.board,
 		difficulty: solveData.score,
@@ -292,45 +297,38 @@ function createSolution() {
 	return solveBoard(board).board;
 }
 
-function punchHoles(solution, iterations) {
-	let bestDifficulty = 0;
-	let bestHoles = 0;
-	let bestBoard = solution.clone();
+function punchHoles(solution) {
+	let board = solution.clone();
+	let difficulty = 0;
 
-	for (let i = 0; i < iterations; i++) {
-		const board = bestBoard.clone();
-		for (let j = 0; j < 18; j++) {
-			const index = Math.floor(Math.random() * 41);
-			const mirror = 80 - index;
+	// create pairs we can try to punch out.
+	// pairs are defined as a cell index i, which is reflected
+	// about the center as 80 - i. The center (40), is
+	// therefore paired with itself.
+	const pairs = new Array(41).fill(0).map((_, i) => i);
 
-			if (Math.random() < .5) {
-				board.values[index] = solution.values[index];
-				board.values[mirror] = solution.values[mirror];
-			} else {
-				board.values[index] = null;
-				board.values[mirror] = null;
-			}
+	// randomly pick pairs and punches them out.
+	// if the solution is still unique, accept the change,
+	// else discard the change and try another pair.
+	while (pairs.length !== 0) {
+		const index = popRand(pairs);
+		const nextBoard = board.clone();
+		nextBoard.values[index] = null;
+		nextBoard.values[80 - index] = null;
 
-			const result = solveBoard(board, true);
-			const holes = board.values.reduce((t, v) => t + (v == null ? 1 : 0), 0);
-
-			if (
-				result.isUnique &&
-				(result.difficulty > bestDifficulty || holes > bestHoles)
-			) {
-				bestDifficulty = result.difficulty;
-				bestHoles = holes;
-				bestBoard = board.clone();
-			}
+		const result = solveBoard(nextBoard, true);
+		if (result.isUnique) {
+			board = nextBoard;
+			difficulty = result.difficulty;
 		}
 	}
 
-	return {board: bestBoard, difficulty: bestDifficulty};
+	return {board, difficulty};
 }
 
-function makePuzzle(iterations = 25) {
+function makePuzzle() {
 	const solution = createSolution();
-	const {board, difficulty} = punchHoles(solution, iterations);
+	const {board, difficulty} = punchHoles(solution);
 
 	return {puzzle: board.values, difficulty};
 }
