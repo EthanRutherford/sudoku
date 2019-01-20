@@ -17,6 +17,7 @@ const {
 const {startTimer} = require("./util");
 const styles = require("../styles/game");
 
+const noteClass = (n, hovered) => `${styles[`note${n}`]} ` + (hovered ? styles.hoveredNote : "");
 const pencilOn = `${styles.button} ${styles.pencilActive}`;
 const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -69,7 +70,7 @@ function Board(props) {
 		}}, [
 			value,
 			numbers.map((number) => note.has(number) && j({div: {
-				className: styles[`note${number}`],
+				className: noteClass(number, number === hoveredValue),
 				key: number,
 			}}, number)),
 		]);
@@ -90,7 +91,7 @@ function Controls(props) {
 		j({button: {
 			className: styles.button,
 			onClick: () => props.setValue(null),
-		}}, "↩"),
+		}}, "⌫"),
 		j({button: {
 			className: props.noteMode ? pencilOn : styles.button,
 			onClick: props.toggleNoteMode,
@@ -274,7 +275,7 @@ module.exports = class Game extends Component {
 		const selectedIndex = this.state.selectedIndex;
 
 		if (this.state.noteMode) {
-			if (puzzle[selectedIndex] != null && answers[selectedIndex] != null) {
+			if (puzzle[selectedIndex] != null || answers[selectedIndex] != null) {
 				return;
 			}
 

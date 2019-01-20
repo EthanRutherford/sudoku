@@ -90,7 +90,7 @@
 
 .cell.hovered-value {
 	background-color: var(--green-steel-light);
-	color: var(--green-steel)
+	color: var(--green-steel);
 }
 
 .cell.error {
@@ -103,29 +103,34 @@
 	justify-content: center;
 	align-items: center;
 	position: absolute;
-	width: calc(100% / 3);
-	height: calc(100% / 3);
+	width: calc(96% / 3);
+	height: calc(96% / 3);
 	color: var(--green);
 	font-size: 3vmin;
 	font-weight: bold;
 }
 .note-1, .note-2, .note-3 {
-	top: 0;
+	top: 2%;
 }
 .note-4, .note-5, .note-6 {
-	top: calc(100% / 3);
+	top: calc(96% / 3 + 2%);
 }
 .note-7, .note-8, .note-9 {
-	top: calc(200% / 3);
+	top: calc(192% / 3 + 2%);
 }
 .note-1, .note-4, .note-7 {
-	left: 0;
+	left: 2%;
 }
 .note-2, .note-5, .note-8 {
-	left: calc(100% / 3);
+	left: calc(96% / 3 + 2%);
 }
 .note-3, .note-6, .note-9 {
-	left: calc(200% / 3);
+	left: calc(192% / 3 + 2%);
+}
+
+.hovered-note {
+	background-image: radial-gradient(var(--green-steel-light), transparent);
+	color: var(--green-steel);
 }
 
 .controls {
