@@ -48,6 +48,10 @@ class Menu extends Component {
 						className: styles.button,
 						onClick: this.props.openOptions,
 					}}, "options"),
+					j({button: {
+						className: styles.button,
+						onClick: this.props.openAbout,
+					}}, "about"),
 				]),
 			]),
 		]);

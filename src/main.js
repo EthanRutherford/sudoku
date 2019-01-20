@@ -20,6 +20,7 @@ const PAGES = {
 	results: 3,
 	records: 4,
 	options: 5,
+	about: 6,
 };
 
 const INITIAL_STATE = {
@@ -43,6 +44,7 @@ class App extends Component {
 		this.winGame = this.winGame.bind(this);
 		this.openRecords = this.openRecords.bind(this);
 		this.openOptions = this.openOptions.bind(this);
+		this.openAbout = this.openAbout.bind(this);
 		this.goBack = this.goBack.bind(this);
 	}
 	requestPuzzle(difficulty) {
@@ -83,6 +85,9 @@ class App extends Component {
 	}
 	openOptions() {
 		this.setState({page: PAGES.options});
+	}
+	openAbout() {
+		this.setState({page: PAGES.about});
 	}
 	goBack() {
 		this.setState(INITIAL_STATE);
@@ -148,14 +153,21 @@ class App extends Component {
 		if (page === PAGES.records) {
 			return [
 				j([Header, {goBack: this.goBack, key: 1}]),
-				j([ComingSoon], "The records page is a work in progress"),
+				j([ComingSoon, {key: 2}], "The records page is coming soon."),
 			];
 		}
 
 		if (page === PAGES.options) {
 			return [
 				j([Header, {goBack: this.goBack, key: 1}]),
-				j([ComingSoon], "The options page is a work in progress"),
+				j([ComingSoon, {key: 2}], "The options page is coming soon."),
+			];
+		}
+
+		if (page === PAGES.about) {
+			return [
+				j([Header, {goBack: this.goBack, key: 1}]),
+				j([ComingSoon, {key: 2}], "The about page is coming soon."),
 			];
 		}
 
@@ -166,6 +178,7 @@ class App extends Component {
 				resumePuzzle: this.resumePuzzle,
 				openRecords: this.openRecords,
 				openOptions: this.openOptions,
+				openAbout: this.openAbout,
 				key: 2,
 			}]),
 		];
