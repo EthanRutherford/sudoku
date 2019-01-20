@@ -77,6 +77,10 @@ class App extends Component {
 		saveHighScore(this.state.difficulty, score);
 		this.setState({
 			page: PAGES.results,
+			puzzle: null,
+			initialAnswers: null,
+			initialNotes: null,
+			initialTime: null,
 			score,
 		});
 	}
