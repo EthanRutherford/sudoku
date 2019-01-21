@@ -156,7 +156,7 @@
 .button:disabled {
 	filter: brightness(.5);
 }
-.pencil-active {
+.button.active {
 	color: var(--green-light);
 }
 .mode-button {

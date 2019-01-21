@@ -1,0 +1,146 @@
+@import "./variables.css";
+
+.options {
+	margin: auto;
+	padding-top: 20px;
+	padding-bottom: 80px;
+	width: var(--standard-width);
+	min-width: var(--standard-min-width);
+}
+
+.title {
+	margin-bottom: 20px;
+	font-size: var(--large);
+}
+
+.section {
+	margin-bottom: 20px;
+	width: 400px;
+	max-width: 100%;
+}
+
+.separator {
+    margin-bottom: 20px;
+	border-bottom: 1px solid var(--slate);
+	width: 400px;
+	max-width: 100%;
+}
+
+.label {
+	margin-bottom: 10px;
+	border-bottom: 1px solid var(--slate);
+	padding-bottom: 10px;
+	width: 100%;
+}
+
+.description {
+	margin-bottom: 10px;
+	font-size: var(--small);
+}
+
+.select-wrapper {
+	display: inline-block;
+	position: relative;
+    width: 100%;
+	font-size: var(--small);
+}
+.select-wrapper:before {
+	content: "";
+	position: absolute;
+	top: 15px;
+	right: 6px;
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: 6px 3px 0 3px;
+	border-color: var(--carbon) transparent transparent transparent;
+	z-index: 1;
+}
+
+.select-input {
+	border: 1px solid var(--carbon);
+	padding: 5px 18px 5px 10px;
+	width: 100%;
+	height: 36px;
+	text-overflow: ellipsis;
+	cursor: pointer;
+}
+
+.select-input:focus + .select-dropdown {
+	display: block;
+}
+
+.select-dropdown {
+	display: none;
+	position: absolute;
+	top: 100%;
+	left: 1px;
+	right: 1px;
+	box-shadow: 1px 2px 2px 1px rgba(0, 0, 0, .2);
+	background-color: white;
+	z-index: 2;
+}
+
+.option {
+	display: block;
+	padding: 10px;
+	width: 100%;
+	text-align: left;
+}
+.option:hover {
+	background-color: var(--not-white);
+}
+.selected {
+	background-color: var(--not-ash);
+}
+
+.button {
+	border: 2px outset var(--grey);
+	padding: 10px;
+	height: 50px;
+	width: 100%;
+	background-color: var(--slate);
+	color: white;
+	text-align: center;
+	text-shadow: 2px 2px var(--carbon);
+}
+.button:hover{
+	background-color: var(--slate-light);
+}
+.button:active {
+	border-style: inset;
+	background-color: var(--slate-dark);
+}
+
+.confirm-overlay {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: rgba(0, 0, 0, .2);
+	z-index: 1000;
+}
+
+.confirm-popup {
+	display: flex;
+	flex-direction: column;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	box-shadow: 2px 2px 20px 6px rgba(0, 0, 0, .2);
+	width: 600px;
+	max-width: calc(100vw - 20px);
+	background-color: var(--not-white);
+}
+
+.confirm-header {
+	padding: 20px;
+	background-color: var(--red-light);
+	font-size: var(--huge);
+}
+
+.confirm-content {
+	padding: 20px;
+}

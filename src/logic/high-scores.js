@@ -20,7 +20,14 @@ function saveHighScore(difficulty, score) {
 	localStorage.setItem(difficultyKeys[difficulty], JSON.stringify(scores));
 }
 
+function resetAllScores() {
+	for (const key of Object.values(difficultyKeys)) {
+		localStorage.removeItem(key);
+	}
+}
+
 module.exports = {
 	getHighScores,
 	saveHighScore,
+	resetAllScores,
 };

@@ -83,12 +83,12 @@ function getNeighbors(index) {
 	return neighbors;
 }
 
-function getPotentials(board, index) {
+function getPotentials(values, index) {
 	const neighbors = getNeighbors(index);
 
 	let potentials = new BitSet(0b111111111);
 	for (const index of neighbors) {
-		const value = board.values[index];
+		const value = values[index];
 		if (value) {
 			potentials = potentials.remove(value);
 		}
@@ -242,7 +242,7 @@ function solveBoard(board, checkUnique = false) {
 			continue;
 		}
 
-		board.potentials[i] = getPotentials(board, i);
+		board.potentials[i] = getPotentials(board.values, i);
 		remaining.add(i);
 	}
 
@@ -345,4 +345,11 @@ module.exports = {
 	getNeighbors,
 	makePuzzle,
 	solvePuzzle: (puzzle) => solveBoard(new Board(puzzle)).board.values,
+	fillNotes: (puzzle, notes) => {
+		for (let i = 0; i < BOARD_SIZE; i++) {
+			if (puzzle[i] == null) {
+				notes[i] = getPotentials(puzzle, i);
+			}
+		}
+	},
 };
