@@ -11,6 +11,7 @@ const Game = require("./ui/game");
 const Results = require("./ui/results");
 const Options = require("./ui/options");
 const ComingSoon = require("./ui/coming-soon");
+const Warning = require("./ui/warning");
 require("./view-height");
 require("./styles/reset");
 require("./styles/root");
@@ -33,6 +34,7 @@ const INITIAL_STATE = {
 	initialNotes: null,
 	initialTime: null,
 	score: null,
+	warning: false,
 };
 
 function computeState(state) {
@@ -47,6 +49,7 @@ function computeState(state) {
 				initialNotes: notes,
 				initialTime: time,
 				score: null,
+				warning: false,
 			};
 		}
 
@@ -85,6 +88,19 @@ class App extends Component {
 	}
 	requestPuzzle(difficulty) {
 		if (this.loading) return;
+
+		if (!this.state.warning) {
+			const existingGame = getStoredGame();
+
+			if (existingGame.puzzle != null) {
+				this.setState({
+					difficulty: existingGame.difficulty,
+					warning: true,
+				});
+
+				return;
+			}
+		}
 
 		const prevPage = this.state.page;
 		requestPuzzle(difficulty).then((puzzle) => this.setState({
@@ -234,6 +250,15 @@ class App extends Component {
 				openOptions: this.openOptions,
 				openAbout: this.openAbout,
 				key: 2,
+			}]),
+			this.state.warning && j([Warning, {
+				header: "Ongoing game",
+				content: `You currently have an ongoing ${difficulty} puzzle, do you want to abandon it?`,
+				confirm: "start new game",
+				cancel: "cancel",
+				onConfirm: () => this.requestPuzzle(difficulty),
+				onCancel: () => this.setState({warning: false}),
+				key: 3,
 			}]),
 		];
 	}

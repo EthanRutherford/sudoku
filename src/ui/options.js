@@ -12,6 +12,7 @@ const {
 	saveOptions,
 } = require("../logic/options");
 const {resetAllScores} = require("../logic/high-scores");
+const Warning = require("./warning");
 const styles = require("../styles/options");
 
 const HOVER_DESCRIPTIONS = {
@@ -182,32 +183,17 @@ module.exports = class Options extends Component {
 					onClick: () => this.setState({confirm: true}),
 				}}, "reset scores"),
 			]),
-			this.state.confirm && j({div: {
-				className: styles.confirmOverlay,
-				onClick: (event) => {
-					if (event.target === event.currentTarget) {
-						this.setState({confirm: false});
-					}
+			this.state.confirm && j([Warning, {
+				header: "Are you sure?",
+				content: "This will wipe all your saves, and cannot be undone!",
+				confirm: "delete anyway",
+				cancel: "cancel",
+				onConfirm: () => {
+					resetAllScores();
+					this.setState({confirm: false});
 				},
-			}}, j({div: styles.confirmPopup}, [
-				j({h2: styles.confirmHeader}, "Are you sure?"),
-				j({div: styles.confirmContent},
-					"This will wipe all your saves, and cannot be undone!",
-				),
-				j({div: 0}, [
-					j({button: {
-						className: styles.button,
-						onClick: () => {
-							resetAllScores();
-							this.setState({confirm: false});
-						},
-					}}, "delete anyway"),
-					j({button: {
-						className: styles.button,
-						onClick: () => this.setState({confirm: false}),
-					}}, "cancel"),
-				]),
-			])),
+				onCancel: () => this.setState({confirm: false}),
+			}]),
 		]);
 	}
 };

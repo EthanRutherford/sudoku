@@ -111,36 +111,3 @@
 	border-style: inset;
 	background-color: var(--slate-dark);
 }
-
-.confirm-overlay {
-	position: fixed;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	background-color: rgba(0, 0, 0, .2);
-	z-index: 1000;
-}
-
-.confirm-popup {
-	display: flex;
-	flex-direction: column;
-	position: fixed;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	box-shadow: 2px 2px 20px 6px rgba(0, 0, 0, .2);
-	width: 600px;
-	max-width: calc(100vw - 20px);
-	background-color: var(--not-white);
-}
-
-.confirm-header {
-	padding: 20px;
-	background-color: var(--red-light);
-	font-size: var(--huge);
-}
-
-.confirm-content {
-	padding: 20px;
-}
