@@ -3,9 +3,9 @@ const styles = require("../styles/header");
 
 module.exports = function Header(props) {
 	return j({div: styles.header}, j({div: styles.content}, [
-		props.goBack && j({button: {
+		props.showBack && j({button: {
 			className: styles.back,
-			onClick: props.goBack,
+			onClick: () => history.back(),
 		}}),
 		j({span: styles.title}, [
 			"Sudoku",

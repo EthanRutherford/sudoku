@@ -74,7 +74,7 @@ module.exports = function Results(props) {
 			}}, "play again"),
 			j({button: {
 				className: styles.button,
-				onClick: props.goBack,
+				onClick: () => history.back(),
 			}}, "main menu"),
 		]),
 	]);

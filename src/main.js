@@ -4,6 +4,7 @@ const j = require("react-jenny");
 const requestPuzzle = require("./generator/request-puzzle");
 const {storeDifficulty} = require("./logic/game-store");
 const {saveHighScore} = require("./logic/high-scores");
+const {getStoredGame} = require("./logic/game-store");
 const Header = require("./ui/header");
 const Menu = require("./ui/menu");
 const Game = require("./ui/game");
@@ -34,11 +35,46 @@ const INITIAL_STATE = {
 	score: null,
 };
 
+function computeState(state) {
+	if (state != null) {
+		if (state.page === PAGES.game) {
+			const {puzzle, answers, notes, time} = getStoredGame();
+
+			return {
+				...state,
+				puzzle,
+				initialAnswers: answers,
+				initialNotes: notes,
+				initialTime: time,
+				score: null,
+			};
+		}
+
+		return {
+			...INITIAL_STATE,
+			...state,
+		};
+	}
+
+	const page = PAGES[location.hash.slice(1)];
+
+	if (page != null && page > PAGES.results) {
+		return {...INITIAL_STATE, page};
+	}
+
+	history.replaceState({page: PAGES.menu}, null, "/");
+	return {...INITIAL_STATE};
+}
+
 class App extends Component {
 	constructor(...args) {
 		super(...args);
 
-		this.state = {...INITIAL_STATE};
+		this.state = computeState(history.state);
+
+		window.onpopstate = (event) => {
+			this.setState(computeState(event.state));
+		};
 
 		this.requestPuzzle = this.requestPuzzle.bind(this);
 		this.resumePuzzle = this.resumePuzzle.bind(this);
@@ -46,13 +82,20 @@ class App extends Component {
 		this.openRecords = this.openRecords.bind(this);
 		this.openOptions = this.openOptions.bind(this);
 		this.openAbout = this.openAbout.bind(this);
-		this.goBack = this.goBack.bind(this);
 	}
 	requestPuzzle(difficulty) {
+		if (this.loading) return;
+
+		const prevPage = this.state.page;
 		requestPuzzle(difficulty).then((puzzle) => this.setState({
 			page: PAGES.game,
 			difficulty,
 			puzzle,
+		}, () => {
+			const method = `${prevPage === PAGES.menu ? "push" : "replace"}State`;
+
+			history[method]({page: PAGES.game, difficulty}, null, `#${difficulty}`);
+			this.loading = false;
 		}));
 
 		storeDifficulty(difficulty);
@@ -63,15 +106,20 @@ class App extends Component {
 				this.setState({page: PAGES.loading, difficulty});
 			}
 		}, 400);
+
+		this.loading = true;
 	}
-	resumePuzzle(difficulty, puzzle, initialAnswers, initialNotes, initialTime) {
+	resumePuzzle() {
+		const {difficulty, puzzle, answers, notes, time} = getStoredGame();
 		this.setState({
 			page: PAGES.game,
 			difficulty,
 			puzzle,
-			initialAnswers,
-			initialNotes,
-			initialTime,
+			initialAnswers: answers,
+			initialNotes: notes,
+			initialTime: time,
+		}, () => {
+			history.pushState({page: PAGES.game, difficulty}, null, `#${difficulty}`);
 		});
 	}
 	winGame(score) {
@@ -83,19 +131,24 @@ class App extends Component {
 			initialNotes: null,
 			initialTime: null,
 			score,
+		}, () => {
+			history.replaceState({page: PAGES.results, score}, null, "#results");
 		});
 	}
 	openRecords() {
-		this.setState({page: PAGES.records});
+		this.setState({page: PAGES.records}, () => {
+			history.pushState({page: PAGES.records}, null, "#records");
+		});
 	}
 	openOptions() {
-		this.setState({page: PAGES.options});
+		this.setState({page: PAGES.options}, () => {
+			history.pushState({page: PAGES.options}, null, "#options");
+		});
 	}
 	openAbout() {
-		this.setState({page: PAGES.about});
-	}
-	goBack() {
-		this.setState(INITIAL_STATE);
+		this.setState({page: PAGES.about}, () => {
+			history.pushState({page: PAGES.about}, null, "#about");
+		});
 	}
 	render() {
 		const {
@@ -126,11 +179,7 @@ class App extends Component {
 
 		if (page === PAGES.game) {
 			return [
-				j([Header, {
-					goBack: this.goBack,
-					difficulty: difficulty,
-					key: 1,
-				}]),
+				j([Header, {difficulty, showBack: true, key: 1}]),
 				j([Game, {
 					difficulty,
 					puzzle,
@@ -145,12 +194,11 @@ class App extends Component {
 
 		if (page === PAGES.results) {
 			return [
-				j([Header, {difficulty, goBack: this.goBack, key: 1}]),
+				j([Header, {difficulty, showBack: true, key: 1}]),
 				j([Results, {
 					difficulty,
 					score: score,
 					requestPuzzle: this.requestPuzzle,
-					goBack: this.goBack,
 					key: 2,
 				}]),
 			];
@@ -158,21 +206,21 @@ class App extends Component {
 
 		if (page === PAGES.records) {
 			return [
-				j([Header, {goBack: this.goBack, key: 1}]),
+				j([Header, {showBack: true, key: 1}]),
 				j([ComingSoon, {key: 2}], "The records page is coming soon."),
 			];
 		}
 
 		if (page === PAGES.options) {
 			return [
-				j([Header, {goBack: this.goBack, key: 1}]),
+				j([Header, {showBack: true, key: 1}]),
 				j([Options, {key: 2}]),
 			];
 		}
 
 		if (page === PAGES.about) {
 			return [
-				j([Header, {goBack: this.goBack, key: 1}]),
+				j([Header, {showBack: true, key: 1}]),
 				j([ComingSoon, {key: 2}], "The about page is coming soon."),
 			];
 		}

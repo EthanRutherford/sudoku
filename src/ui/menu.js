@@ -10,7 +10,7 @@ const DIFFICULTIES = [
 ];
 
 module.exports = function Menu(props) {
-	const {difficulty, puzzle, answers, notes, time} = getStoredGame();
+	const canResume = getStoredGame().puzzle != null;
 
 	return j({div: styles.menu}, [
 		j({div: styles.columns}, [
@@ -26,14 +26,8 @@ module.exports = function Menu(props) {
 			j({div: styles.column}, [
 				j({button: {
 					className: styles.button,
-					onClick: () => props.resumePuzzle(
-						difficulty,
-						puzzle,
-						answers,
-						notes,
-						time,
-					),
-					disabled: puzzle == null,
+					onClick: props.resumePuzzle,
+					disabled: !canResume,
 				}}, "resume"),
 				j({button: {
 					className: styles.button,
