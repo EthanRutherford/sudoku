@@ -149,7 +149,11 @@ class App extends Component {
 			initialTime: null,
 			score,
 		}, () => {
-			history.replaceState({page: PAGES.results, score}, null, "#results");
+			history.replaceState({
+				page: PAGES.results,
+				difficulty: this.state.difficulty,
+				score,
+			}, null, "#results");
 		});
 	}
 	openRecords() {
