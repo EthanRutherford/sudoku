@@ -4,7 +4,7 @@ const {
 	getPuzzle,
 	deletePuzzle,
 	countPuzzles,
-} = require("./db");
+} = require("./puzzle-db");
 
 // spawn generator worker, to generate puzzles in the background
 const generator = new Worker("/dist/worker.js");

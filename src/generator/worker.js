@@ -4,7 +4,7 @@ const {
 	openDatabase,
 	storePuzzle,
 	countPuzzles,
-} = require("./db");
+} = require("./puzzle-db");
 
 // create a puzzle, and place it in the appropriate difficulty list
 async function createPuzzle(db, counts) {

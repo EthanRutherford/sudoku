@@ -1,3 +1,4 @@
+const {Component} = require("react");
 const j = require("react-jenny");
 const {getHighScores} = require("../logic/high-scores");
 const {prettifyTime, prettifyDate} = require("./util");
@@ -39,43 +40,71 @@ function getRand(list) {
 	return list[index];
 }
 
-module.exports = function Results(props) {
-	const message = getRand(congrats);
-	const highScores = getHighScores(props.difficulty);
-	const found = highScores.findIndex((item) => item.score === props.score);
-	const matchIndex = found === -1 ? 100 : found;
+module.exports = class Results extends Component {
+	constructor(...args) {
+		super(...args);
 
-	const end = Math.max(10, Math.min(matchIndex + 5, highScores.length));
-	const start = end - 10;
-	const scoresToShow = highScores.map(
-		({score, date}, index) => ({index, score, date}),
-	).slice(start, end);
+		this.state = {
+			message: getRand(congrats),
+			scoresToShow: [],
+		};
 
-	return j({div: styles.results}, [
-		j({h2: {className: styles.title}}, message),
-		j({ul: styles.list}, [
-			start > 0 && j({li: etc}, "•••"),
-			scoresToShow.map(({index, score, date}) =>
-				j({li: {
-					className: matchIndex === index ? current : styles.listItem,
-					key: score,
-				}}, [
-					j({div: styles.rank}, index + 1),
-					j({div: styles.date}, prettifyDate(date)),
-					j({div: styles.score}, prettifyTime(score)),
-				]),
-			),
-			end < highScores.length - 1 && j({li: etc}, "•••"),
-		]),
-		j({div: styles.buttons}, [
-			j({button: {
-				className: styles.button,
-				onClick: () => props.requestPuzzle(props.difficulty),
-			}}, "play again"),
-			j({button: {
-				className: styles.button,
-				onClick: () => history.back(),
-			}}, "main menu"),
-		]),
-	]);
+		getHighScores(this.props.difficulty).then((highScores) => {
+			const found = highScores.findIndex((item) => item.score === this.props.score);
+			const matchIndex = found === -1 ? 100 : found;
+			const end = Math.max(10, Math.min(matchIndex + 5, highScores.length));
+			const start = end - 10;
+			const scoresToShow = highScores.map(
+				({score, date}, index) => ({index, score, date}),
+			).slice(start, end);
+
+			this.setState({
+				scoresToShow,
+				matchIndex,
+				start,
+				end,
+				total: highScores.length,
+			});
+		});
+	}
+
+	render() {
+		const {difficulty, requestPuzzle} = this.props;
+		const {
+			message,
+			scoresToShow,
+			matchIndex,
+			start,
+			end,
+			total,
+		} = this.state;
+
+		return j({div: styles.results}, [
+			j({h2: {className: styles.title}}, message),
+			j({ul: styles.list}, [
+				start > 0 && j({li: etc}, "•••"),
+				scoresToShow.map(({index, score, date}) =>
+					j({li: {
+						className: matchIndex === index ? current : styles.listItem,
+						key: score,
+					}}, [
+						j({div: styles.rank}, index + 1),
+						j({div: styles.date}, prettifyDate(date)),
+						j({div: styles.score}, prettifyTime(score)),
+					]),
+				),
+				end < total - 1 && j({li: etc}, "•••"),
+			]),
+			j({div: styles.buttons}, [
+				j({button: {
+					className: styles.button,
+					onClick: () => requestPuzzle(difficulty),
+				}}, "play again"),
+				j({button: {
+					className: styles.button,
+					onClick: () => history.back(),
+				}}, "main menu"),
+			]),
+		]);
+	}
 };

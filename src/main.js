@@ -138,8 +138,9 @@ class App extends Component {
 			history.pushState({page: PAGES.game, difficulty}, null, `#${difficulty}`);
 		});
 	}
-	winGame(score) {
-		saveHighScore(this.state.difficulty, score);
+	async winGame(score) {
+		await saveHighScore(this.state.difficulty, score);
+
 		this.setState({
 			page: PAGES.results,
 			puzzle: null,
