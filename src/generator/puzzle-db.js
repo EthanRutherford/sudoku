@@ -1,4 +1,4 @@
-const difficulties = ["easy", "medium", "hard", "expert"];
+const DIFFICULTIES = ["easy", "medium", "hard", "expert"];
 
 function openDatabase() {
 	return new Promise((resolve, reject) => {
@@ -13,7 +13,7 @@ function openDatabase() {
 			}
 
 			// create a table for each difficulty
-			for (const difficulty of difficulties) {
+			for (const difficulty of DIFFICULTIES) {
 				database.createObjectStore(difficulty, {autoIncrement: true});
 			}
 		};
@@ -78,7 +78,7 @@ function countPuzzles(db, difficulty) {
 }
 
 module.exports = {
-	difficulties,
+	DIFFICULTIES,
 	openDatabase,
 	storePuzzle,
 	getPuzzle,

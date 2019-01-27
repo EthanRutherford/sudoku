@@ -1,0 +1,17 @@
+@import "./variables.css";
+
+.records {
+	margin: auto;
+	padding: 20px 0;
+	width: var(--standard-width);
+	min-width: var(--standard-min-width);
+}
+
+.select-wrapper {
+	margin-bottom: 20px;
+	max-width: 400px;
+}
+
+.select-wrapper>div {
+	font-size: var(--normal);
+}

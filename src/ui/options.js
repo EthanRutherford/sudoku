@@ -12,6 +12,7 @@ const {
 	saveOptions,
 } = require("../logic/options");
 const {resetAllScores} = require("../logic/high-scores");
+const Select = require("./select");
 const Warning = require("./warning");
 const styles = require("../styles/options");
 
@@ -33,28 +34,6 @@ const AUTO_CHECK_DESCRIPTIONS = {
 	[AUTO_CHECK_MODES.invalid]: "The game will inform you when a selected value conflicts with the current board.",
 	[AUTO_CHECK_MODES.incorrect]: "The game will inform you when a selected value does not match the solution.",
 };
-
-const selectedOption = `${styles.option} ${styles.selected}`;
-
-function Select({value, onChange, children: options}) {
-	const values = value instanceof Array ? value : [value];
-	const selected = options.filter((x) => values.includes(x.value));
-	const display = selected.map((option) => option.display).join(", ");
-
-	return j({div: styles.selectWrapper}, [
-		j({input: {
-			className: styles.selectInput,
-			readOnly: true,
-			value: display || "none",
-		}}),
-		j({div: styles.selectDropdown}, options.map((option) =>
-			j({button: {
-				className: selected.includes(option) ? selectedOption : styles.option,
-				onMouseDown: () => onChange(option.value),
-			}}, option.display),
-		)),
-	]);
-}
 
 module.exports = class Options extends Component {
 	constructor(...args) {

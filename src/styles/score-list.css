@@ -1,0 +1,47 @@
+@import "./variables.css";
+
+.list {
+	margin-bottom: 20px;
+	border: 1px solid var(--carbon);
+	width: 100%;
+	max-width: 400px;
+}
+
+.list-item {
+	display: flex;
+	padding: 5px 10px;
+	background-color: var(--ash-light);
+}
+.list-item:nth-child(odd) {
+	background-color: var(--not-ash);
+}
+.list-item:not(:last-child) {
+	border-bottom: 1px solid var(--carbon);
+}
+
+.list-item.current {
+	background-color: var(--steel-grey);
+	color: var(--steel-dark);
+}
+
+.list-item.etc {
+	justify-content: center;
+}
+
+.list-item.none:before {
+	content: "none yet"
+}
+
+.rank {
+	flex: 1 0 0;
+}
+
+.date {
+	flex: 6 0 0;
+	text-align: center;
+}
+
+.score {
+	flex: 3 0 0;
+	text-align: right;
+}

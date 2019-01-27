@@ -1,11 +1,6 @@
-const {Component} = require("react");
 const j = require("react-jenny");
-const {getHighScores} = require("../logic/high-scores");
-const {prettifyTime, prettifyDate} = require("./util");
+const ScoreList = require("./score-list");
 const styles = require("../styles/results");
-
-const etc = `${styles.listItem} ${styles.etc}`;
-const current = `${styles.listItem} ${styles.current}`;
 
 const congrats = [
 	"Congratulations!",
@@ -40,71 +35,21 @@ function getRand(list) {
 	return list[index];
 }
 
-module.exports = class Results extends Component {
-	constructor(...args) {
-		super(...args);
+module.exports = function Results({difficulty, score, requestPuzzle}) {
+	const message = getRand(congrats);
 
-		this.state = {
-			message: getRand(congrats),
-			scoresToShow: [],
-		};
-
-		getHighScores(this.props.difficulty).then((highScores) => {
-			const found = highScores.findIndex((item) => item.score === this.props.score);
-			const matchIndex = found === -1 ? 100 : found;
-			const end = Math.max(10, Math.min(matchIndex + 5, highScores.length));
-			const start = end - 10;
-			const scoresToShow = highScores.map(
-				({score, date}, index) => ({index, score, date}),
-			).slice(start, end);
-
-			this.setState({
-				scoresToShow,
-				matchIndex,
-				start,
-				end,
-				total: highScores.length,
-			});
-		});
-	}
-
-	render() {
-		const {difficulty, requestPuzzle} = this.props;
-		const {
-			message,
-			scoresToShow,
-			matchIndex,
-			start,
-			end,
-			total,
-		} = this.state;
-
-		return j({div: styles.results}, [
-			j({h2: {className: styles.title}}, message),
-			j({ul: styles.list}, [
-				start > 0 && j({li: etc}, "•••"),
-				scoresToShow.map(({index, score, date}) =>
-					j({li: {
-						className: matchIndex === index ? current : styles.listItem,
-						key: score,
-					}}, [
-						j({div: styles.rank}, index + 1),
-						j({div: styles.date}, prettifyDate(date)),
-						j({div: styles.score}, prettifyTime(score)),
-					]),
-				),
-				end < total - 1 && j({li: etc}, "•••"),
-			]),
-			j({div: styles.buttons}, [
-				j({button: {
-					className: styles.button,
-					onClick: () => requestPuzzle(difficulty),
-				}}, "play again"),
-				j({button: {
-					className: styles.button,
-					onClick: () => history.back(),
-				}}, "main menu"),
-			]),
-		]);
-	}
+	return j({div: styles.results}, [
+		j({h2: styles.title}, message),
+		j([ScoreList, {difficulty, score}]),
+		j({div: styles.buttons}, [
+			j({button: {
+				className: styles.button,
+				onClick: () => requestPuzzle(difficulty),
+			}}, "play again"),
+			j({button: {
+				className: styles.button,
+				onClick: () => history.back(),
+			}}, "main menu"),
+		]),
+	]);
 };

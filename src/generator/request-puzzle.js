@@ -1,5 +1,5 @@
 const {
-	difficulties,
+	DIFFICULTIES,
 	openDatabase,
 	getPuzzle,
 	deletePuzzle,
@@ -32,7 +32,7 @@ async function tryGetPuzzle(db, difficulty) {
 
 async function requestPuzzle(difficulty) {
 	// ignore any garbage requests
-	if (difficulties.includes(difficulty)) {
+	if (DIFFICULTIES.includes(difficulty)) {
 		return await tryGetPuzzle(await openDatabase(), difficulty);
 	}
 

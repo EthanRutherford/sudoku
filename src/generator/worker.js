@@ -1,6 +1,6 @@
 const {makePuzzle} = require("../logic/sudoku");
 const {
-	difficulties,
+	DIFFICULTIES,
 	openDatabase,
 	storePuzzle,
 	countPuzzles,
@@ -11,9 +11,9 @@ async function createPuzzle(db, counts) {
 	const difficultyLevels = [0, 2, 5, Infinity];
 	const {puzzle, difficulty} = makePuzzle();
 
-	for (let i = 0; i < difficulties.length; i++) {
+	for (let i = 0; i < DIFFICULTIES.length; i++) {
 		const level = difficultyLevels[i];
-		const name = difficulties[i];
+		const name = DIFFICULTIES[i];
 		if (difficulty <= level && counts[i] < 100) {
 			await storePuzzle(db, name, puzzle);
 			break;
@@ -27,7 +27,7 @@ async function createPuzzle(db, counts) {
 // then periodically create more puzzles until there are at least 4
 // per difficulty.
 async function checkForEmptyDifficulty(db) {
-	const counts = await Promise.all(difficulties.map(
+	const counts = await Promise.all(DIFFICULTIES.map(
 		(difficulty) => countPuzzles(db, difficulty),
 	));
 

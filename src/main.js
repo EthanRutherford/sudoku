@@ -8,6 +8,7 @@ const {getStoredGame} = require("./logic/game-store");
 const Header = require("./ui/header");
 const Menu = require("./ui/menu");
 const Game = require("./ui/game");
+const Records = require("./ui/records");
 const Results = require("./ui/results");
 const Options = require("./ui/options");
 const ComingSoon = require("./ui/coming-soon");
@@ -228,7 +229,7 @@ class App extends Component {
 		if (page === PAGES.records) {
 			return [
 				j([Header, {showBack: true, key: 1}]),
-				j([ComingSoon, {key: 2}], "The records page is coming soon."),
+				j([Records, {key: 2}]),
 			];
 		}
 
