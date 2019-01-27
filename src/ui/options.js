@@ -1,5 +1,5 @@
-const j = require("react-jenny");
 const {Component} = require("react");
+const j = require("react-jenny");
 const {
 	GUIDE_MODES,
 	HOVER_MODES,
@@ -16,6 +16,39 @@ const Select = require("./select");
 const Warning = require("./warning");
 const styles = require("../styles/options");
 
+const getGuideDescription = (guideMode) => {
+	if (guideMode === 0) {
+		return "Guide will be disabled.";
+	}
+
+	let guides;
+	let and = false;
+	if (guideMode & GUIDE_MODES.notes) {
+		guides = "matching notes";
+	}
+	if (guideMode & GUIDE_MODES.values) {
+		if (guides) {
+			guides = `, and ${guides}`;
+			and = true;
+		}
+
+		guides = `matching values${guides}`;
+	}
+	if (guideMode & GUIDE_MODES.neighbors) {
+		if (guides) {
+			if (and) {
+				guides = `, ${guides}`;
+			} else {
+				guides = `, and ${guides}`;
+			}
+		}
+
+		guides = `neighbors of the current cell${guides}`;
+	}
+
+	return `Show a guide highlighting ${guides}.`;
+};
+
 const HOVER_DESCRIPTIONS = {
 	[HOVER_MODES.off]: "Hovering over cells will have no effect on the guide",
 	[HOVER_MODES.hoverOnly]: "The guide will only be shown when hovering a cell",
@@ -24,9 +57,9 @@ const HOVER_DESCRIPTIONS = {
 };
 
 const WRAP_DESCRIPTIONS = {
-	[WRAP_MODES.off]: "When using the keyboard to navigate, selection will not wrap at the edges of board.",
-	[WRAP_MODES.sticky]: "When using the keyboard to navigate, selection will wrap at the edges of board, but will \"stick\" to the edges as long as the key is held.",
-	[WRAP_MODES.on]: "When using the keyboard to navigate, selection will always wrap at the edges of board.",
+	[WRAP_MODES.off]: "When using the keyboard to navigate, selection will not wrap at the edges of the board.",
+	[WRAP_MODES.sticky]: "When using the keyboard to navigate, selection will wrap at the edges of the board, but will \"stick\" to the edges as long as the key is held.",
+	[WRAP_MODES.on]: "When using the keyboard to navigate, selection will always wrap at the edges of the board.",
 };
 
 const AUTO_CHECK_DESCRIPTIONS = {
@@ -47,13 +80,25 @@ module.exports = class Options extends Component {
 	render() {
 		return j({div: styles.options}, [
 			j({h2: styles.title}, "Options"),
-			// TODO: timer will go here
+			j({div: styles.section}, [
+				j({h3: styles.label}, "show timer"),
+				j({div: styles.description}, [
+					"Controls whether or not the timer shows during games.",
+				]),
+				j([Select, {
+					value: this.state.timer,
+					onChange: (value) => this.updateOptions({
+						timer: value,
+					}),
+				}], [
+					{value: 0, display: "hide timer"},
+					{value: 1, display: "show timer"},
+				]),
+			]),
 			j({div: styles.section}, [
 				j({h3: styles.label}, "guide mode"),
 				j({div: styles.description}, [
-					"Show a guide, highlighting the chosen items; ",
-					"neighbors of the current cell, matching values, ",
-					"and matching notes.",
+					getGuideDescription(this.state.guideMode),
 				]),
 				j([Select, {
 					value: this.state.guideMode.values,

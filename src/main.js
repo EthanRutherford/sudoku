@@ -201,7 +201,7 @@ class App extends Component {
 
 		if (page === PAGES.game) {
 			return [
-				j([Header, {difficulty, showBack: true, key: 1}]),
+				j([Header, {difficulty, showBack: true, showTimer: true, key: 1}]),
 				j([Game, {
 					difficulty,
 					puzzle,

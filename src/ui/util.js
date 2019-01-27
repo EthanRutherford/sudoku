@@ -1,5 +1,8 @@
 const {storeTime} = require("../logic/game-store");
 
+// allow watching the current timer
+let timerWatcher = null;
+
 function startTimer(initialTime) {
 	let time = initialTime || 0;
 	let lastStamp;
@@ -13,9 +16,12 @@ function startTimer(initialTime) {
 		// must have tabbed away or locked their device
 		if (diff < 1000) {
 			time += diff;
-		}
+			storeTime(time);
 
-		storeTime(time);
+			if (timerWatcher instanceof Function) {
+				timerWatcher(time);
+			}
+		}
 	}
 
 	requestAnimationFrame(animationFrame);
@@ -24,6 +30,10 @@ function startTimer(initialTime) {
 		cancelAnimationFrame(frameId);
 		return Math.round(time);
 	};
+}
+
+function watchTimer(func) {
+	timerWatcher = func;
 }
 
 function prettifyTime(milliseconds) {
@@ -44,4 +54,4 @@ function prettifyDate(timestamp) {
 	return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
 }
 
-module.exports = {startTimer, prettifyTime, prettifyDate};
+module.exports = {startTimer, watchTimer, prettifyTime, prettifyDate};
