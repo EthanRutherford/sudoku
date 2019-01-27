@@ -18,8 +18,8 @@ async function getFormattedScores(difficulty, score) {
 		return {
 			loading: false,
 			scoresToShow: mappedScores,
-			start: 0,
-			end: mappedScores.length,
+			etcStart: false,
+			etcEnd: false,
 		};
 	}
 
@@ -33,9 +33,8 @@ async function getFormattedScores(difficulty, score) {
 		loading: false,
 		scoresToShow,
 		matchIndex,
-		start,
-		end,
-		total: highScores.length,
+		etcStart: start > 0,
+		etcEnd: end < highScores.length,
 	};
 }
 
@@ -63,13 +62,12 @@ module.exports = class ScoreList extends Component {
 			loading,
 			scoresToShow,
 			matchIndex,
-			start,
-			end,
-			total,
+			etcStart,
+			etcEnd,
 		} = this.state;
 
 		return j({ul: styles.list}, [
-			start > 0 && j({li: etc}, "•••"),
+			etcStart && j({li: etc}, "•••"),
 			scoresToShow.map(({index, score, date}) =>
 				j({
 					li: {
@@ -82,8 +80,8 @@ module.exports = class ScoreList extends Component {
 					j({div: styles.score}, prettifyTime(score)),
 				]),
 			),
-			end < total - 1 && j({li: etc}, "•••"),
-			start === end && j({div: loading || none}),
+			etcEnd && j({li: etc}, "•••"),
+			scoresToShow.length === 0 && j({div: loading || none}),
 		]);
 	}
 };
