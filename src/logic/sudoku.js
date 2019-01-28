@@ -98,9 +98,9 @@ function getPotentials(values, index) {
 }
 
 function findBestCandidates(board, remaining, score) {
-	let rows = [[], [], [], [], [], [], [], [], []];
-	let columns = [[], [], [], [], [], [], [], [], []];
-	let boxes = [[], [], [], [], [], [], [], [], []];
+	const rows = [[], [], [], [], [], [], [], [], []];
+	const columns = [[], [], [], [], [], [], [], [], []];
+	const boxes = [[], [], [], [], [], [], [], [], []];
 
 	let cellCandidates = new Array(10);
 	for (const index of remaining) {
@@ -124,11 +124,7 @@ function findBestCandidates(board, remaining, score) {
 		}
 	}
 
-	rows = rows.filter((x) => x.length);
-	columns = columns.filter((x) => x.length);
-	boxes = boxes.filter((x) => x.length);
-
-	const sets = rows.concat(columns).concat(boxes);
+	const sets = rows.concat(columns, boxes).filter((x) => x.length);
 
 	let setCandidates = new Array(10);
 	for (const set of sets) {
@@ -164,6 +160,96 @@ function findBestCandidates(board, remaining, score) {
 	};
 }
 
+function eliminateGhosts(board, remaining) {
+	const numberMap = {
+		1: new Set(),
+		2: new Set(),
+		3: new Set(),
+		4: new Set(),
+		5: new Set(),
+		6: new Set(),
+		7: new Set(),
+		8: new Set(),
+		9: new Set(),
+	};
+
+	for (const index of remaining) {
+		for (const value of board.potentials[index].values) {
+			numberMap[value].add(index);
+		}
+	}
+
+	let did = false;
+	for (let boxIndex = 0; boxIndex < 9; boxIndex++) {
+		const box = boxMap[boxIndex];
+		for (let number = 1; number <= 9; number++) {
+			const map = numberMap[number];
+			const indices = box.filter((index) => map.has(index));
+
+			if (indices.length < 2 || indices.length > 3) {
+				continue;
+			}
+
+			const rowIndex = indexToRow[indices[0]];
+			const columnIndex = indexToColumn[indices[0]];
+			let cells = null;
+
+			if (indices.every((index) => indexToRow[index] === rowIndex)) {
+				cells = rowMap[rowIndex].filter((index) =>
+					indexToBox[index] !== boxIndex && map.has(index),
+				);
+			}
+			if (indices.every((index) => indexToColumn[index] === columnIndex)) {
+				cells = columnMap[columnIndex].filter((index) =>
+					indexToBox[index] !== boxIndex && map.has(index),
+				);
+			}
+
+			if (cells && cells.length > 0) {
+				did = true;
+				for (const index of cells) {
+					board.potentials[index] = board.potentials[index].remove(number);
+					numberMap[number].delete(index);
+				}
+			}
+		}
+	}
+
+	return did;
+}
+
+function eliminateNakedPairs(board, remaining) {
+	let did = false;
+	const sets = rowMap.concat(columnMap, boxMap);
+
+	for (const set of sets) {
+		const empty = set.filter((index) => remaining.has(index));
+
+		for (const indexA of empty) {
+			for (const indexB of empty) {
+				const potentialsA = board.potentials[indexA];
+				const potentialsB = board.potentials[indexB];
+				const potentialValues = potentialsA.values;
+				if (
+					indexA !== indexB &&
+					potentialsA === potentialsB &&
+					potentialValues.length === 2
+				) {
+					for (const indexC of empty) {
+						const potentialsC = board.potentials[indexC];
+						if (indexC !== indexA && indexC !== indexB) {
+							board.potentials[indexC] = potentialsC.remove(potentialValues[0]).remove(potentialValues[1]);
+							did = did || (potentialsC !== board.potentials[indexC]);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return did;
+}
+
 function solveRecursive(board, remaining, score, solveData) {
 	// if there are no more cells to solve, we've found a solution
 	if (remaining.size === 0) {
@@ -182,11 +268,39 @@ function solveRecursive(board, remaining, score, solveData) {
 		return true;
 	}
 
-	const searchResult = findBestCandidates(board, remaining, score);
+	// keep searching for a single logical answer, trying increasingly
+	// advanced techniques until a best candidate is found,
+	// or all techniques are exhausted.
+	let searchResult = null;
+	let lastAttempt = 0;
+	while (true) {
+		searchResult = findBestCandidates(board, remaining, score);
 
-	// board is not solvable from current position
-	if (searchResult == null) {
-		return false;
+		// board is not solvable from current position
+		if (searchResult == null) {
+			return false;
+		}
+
+		// we have a single candidate, go forward with it
+		if (searchResult.candidates.length === 1) {
+			break;
+		}
+
+		// clear out ghosts and try again
+		if (lastAttempt !== 1 && eliminateGhosts(board, remaining)) {
+			score = Math.max(score, 1);
+			lastAttempt = 1;
+			continue;
+		}
+
+		// clear out naked pairs and try again
+		if (lastAttempt !== 2 && eliminateNakedPairs(board, remaining)) {
+			score = Math.max(score, 1);
+			lastAttempt = 2;
+			continue;
+		}
+
+		break;
 	}
 
 	const {candidates, cost} = searchResult;
@@ -194,7 +308,7 @@ function solveRecursive(board, remaining, score, solveData) {
 
 	// if there's more than one branch, the score is at least a 2
 	if (candidates.length > 1) {
-		score = (score === 0 ? 1 : score) + candidates.length - 1;
+		score = Math.max(score, 1) + candidates.length - 1;
 	}
 
 	// recursively attempt filling the board with possible values
