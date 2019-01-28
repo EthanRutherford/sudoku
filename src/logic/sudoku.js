@@ -108,14 +108,14 @@ function findBestCandidates(board, remaining, score) {
 		columns[indexToColumn[index]].push(index);
 		boxes[indexToBox[index]].push(index);
 
-		const potentials = board.potentials[index];
-		if (potentials.size < cellCandidates.length) {
+		const potentials = board.potentials[index].values;
+		if (potentials.length < cellCandidates.length) {
 			// early out: a cell with no potentials means the board is invalid
-			if (potentials.size === 0) {
+			if (potentials.length === 0) {
 				return null;
 			}
 
-			cellCandidates = potentials.values.map((value) => ({index, value}));
+			cellCandidates = potentials.map((value) => ({index, value}));
 
 			// if score is already > 0 and we find a single, return early
 			if (score > 0 && cellCandidates.length === 1) {
@@ -197,13 +197,14 @@ function solveRecursive(board, remaining, score, solveData) {
 		score = (score === 0 ? 1 : score) + candidates.length - 1;
 	}
 
-	// if there's only one candidate, there's no need to make copies
-	// backtracking will skip past this anyway, so no need to waste
-	// cycles allocating new memory and copying values
-	const skipCopy = candidates.length === 1;
-
 	// recursively attempt filling the board with possible values
 	while (candidates.length !== 0) {
+		// if there's only one candidate, there's no need to make copies
+		// backtracking will skip past this anyway, so no need to waste
+		// cycles allocating new memory and copying values
+		const skipCopy = candidates.length === 1;
+
+		// select a random candidate
 		const {index, value} = popRand(candidates);
 
 		// create new board with filled in value and updated potentials
