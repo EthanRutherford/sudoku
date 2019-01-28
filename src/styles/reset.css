@@ -24,3 +24,7 @@ button {
 	background: none;
 	cursor: pointer;
 }
+
+html, body {
+	height: 100%;
+}
