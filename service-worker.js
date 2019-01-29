@@ -30,6 +30,9 @@ workbox.routing.registerRoute(
 	/(?:\.js|\.css|\/)$/,
 	workbox.strategies.staleWhileRevalidate({
 		cacheName: "sudoku-application-code",
+		plugins: [
+			new workbox.broadcastUpdate.Plugin("code-updates"),
+		],
 	}),
 );
 

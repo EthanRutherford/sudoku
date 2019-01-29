@@ -1,6 +1,8 @@
 const {Component} = require("react");
 const j = require("react-jenny");
+const UpdateIcon = require("../../images/update");
 const {getOptions} = require("../logic/options");
+const {listenForUpdates} = require("../pwa/listen-for-updates");
 const {watchTimer, prettifyTime} = require("./util");
 const styles = require("../styles/header");
 
@@ -28,6 +30,23 @@ class Timer extends Component {
 	}
 }
 
+class NeedsUpdate extends Component {
+	constructor(...args) {
+		super(...args);
+
+		this.state = {showButton: false};
+
+		listenForUpdates(() => this.setState({showButton: true}));
+	}
+	render() {
+		return this.state.showButton && j({button: {
+			className: styles.update,
+			onClick: () => location.reload(),
+			title: "click to install new version",
+		}}, j([UpdateIcon]));
+	}
+}
+
 module.exports = function Header(props) {
 	const showTimer = props.showTimer && getOptions().timer;
 	const titleParts = ["Sudoku"];
@@ -44,5 +63,6 @@ module.exports = function Header(props) {
 			onClick: () => history.back(),
 		}}),
 		j({span: styles.title}, titleParts),
+		j([NeedsUpdate]),
 	]));
 };

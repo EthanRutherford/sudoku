@@ -13,6 +13,7 @@ const Results = require("./ui/results");
 const Options = require("./ui/options");
 const ComingSoon = require("./ui/coming-soon");
 const Warning = require("./ui/warning");
+require("./pwa/init-service-worker");
 require("./view-height");
 require("./styles/reset");
 require("./styles/root");
@@ -271,10 +272,3 @@ class App extends Component {
 }
 
 render(j(App), document.getElementById("react-root"));
-
-// register service worker
-if ("serviceWorker" in navigator) {
-	window.addEventListener("load", () => {
-		navigator.serviceWorker.register("/service-worker.js");
-	});
-}

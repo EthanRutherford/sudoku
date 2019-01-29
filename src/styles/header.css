@@ -10,6 +10,7 @@
 }
 
 .content {
+	position: relative;
 	display: flex;
 	align-items: center;
 	margin: auto;
@@ -57,4 +58,10 @@
 	font-size: var(--large);
 	color: white;
 	text-shadow: 2px 2px var(--carbon);
+}
+
+.update {
+	position: absolute;
+	top: 0;
+	right: 0;
 }
