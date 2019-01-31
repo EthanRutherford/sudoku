@@ -12,6 +12,7 @@ const {
 	saveOptions,
 } = require("../logic/options");
 const {resetAllScores} = require("../logic/high-scores");
+const {notifyCanPrompt, promptForInstall} = require("../pwa/install-prompt");
 const Select = require("./select");
 const Warning = require("./warning");
 const styles = require("../styles/options");
@@ -73,6 +74,12 @@ module.exports = class Options extends Component {
 		super(...args);
 
 		this.state = getOptions();
+	}
+	componentDidMount() {
+		notifyCanPrompt(() => this.setState({canPrompt: true}));
+	}
+	componentWillUnmount() {
+		notifyCanPrompt(null);
 	}
 	updateOptions(state) {
 		this.setState(state, () => saveOptions(this.state));
@@ -206,6 +213,18 @@ module.exports = class Options extends Component {
 					className: styles.button,
 					onClick: () => this.setState({confirm: true}),
 				}}, "reset scores"),
+			]),
+			this.state.canPrompt && j({div: styles.section}, [
+				j({div: styles.separator}),
+				j({div: styles.description}, [
+					"The sudoku app can be installed to your homescreen. Click the button below, and you'll be able to launch the game as a standalone app. You can even play when offline!",
+				]),
+				j({button: {
+					className: styles.button,
+					onClick: () => promptForInstall().then(() => {
+						this.setState({canPrompt: false});
+					}),
+				}}, "add to homescreen"),
 			]),
 			this.state.confirm && j([Warning, {
 				header: "Are you sure?",
