@@ -1,0 +1,42 @@
+@import "./variables.css";
+
+.about {
+	margin: auto;
+	padding: 20px 0;
+	width: var(--standard-width);
+	min-width: var(--standard-min-width);
+}
+
+.title {
+	margin-bottom: 20px;
+	font-size: var(--large);
+	max-width: 800px;
+}
+
+.separator {
+    margin-bottom: 20px;
+	border-bottom: 1px solid var(--slate);
+	width: 800px;
+	max-width: 100%;
+}
+
+.description {
+	margin-bottom: 40px;
+	font-size: var(--small);
+	max-width: 800px;
+}
+
+.version {
+	display: flex;
+}
+
+.number {
+	border-bottom: 1px solid var(--ash-light);
+	max-width: 800px;
+}
+
+.change {
+	margin: 20px 0;
+	max-width: 800px;
+	font-size: var(--small);
+}

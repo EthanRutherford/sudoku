@@ -11,7 +11,7 @@ const Game = require("./ui/game");
 const Records = require("./ui/records");
 const Results = require("./ui/results");
 const Options = require("./ui/options");
-const ComingSoon = require("./ui/coming-soon");
+const About = require("./ui/about");
 const Warning = require("./ui/warning");
 require("./pwa/init-service-worker");
 require("./view-height");
@@ -244,7 +244,7 @@ class App extends Component {
 		if (page === PAGES.about) {
 			return [
 				j([Header, {showBack: true, key: 1}]),
-				j([ComingSoon, {key: 2}], "The about page is coming soon."),
+				j([About, {key: 2}]),
 			];
 		}
 
