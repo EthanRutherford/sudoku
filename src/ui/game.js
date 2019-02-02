@@ -219,28 +219,13 @@ module.exports = class Game extends Component {
 			noteMode: false,
 		};
 
-		if (!this.props.fake) {
-			// set up timer
-			this.endTimer = startTimer(this.props.initialTime);
-
-			// save current game board
-			storePuzzle(this.props.puzzle);
-			storeAnswers(answers);
-			storeNotes(notes);
-
-			// store solution
-			this.solution = solvePuzzle(this.props.puzzle);
-		}
-
 		// key holding state
 		this.held = {};
 		// load options
 		this.options = getOptions();
 		// check options for prefill
-		if (
-			this.props.initialAnswers == null &&
-			PREFILL_LEVELS[this.props.difficulty] >= this.options.notePrefill
-		) {
+		const prefill = PREFILL_LEVELS[this.props.difficulty] >= this.options.notePrefill;
+		if (this.props.initialAnswers == null && prefill) {
 			fillNotes(this.props.puzzle, this.state.notes);
 		}
 		// initialize button mode
@@ -252,6 +237,21 @@ module.exports = class Game extends Component {
 			this.state.valueFirst = Number.parseInt(
 				localStorage.getItem(BUTTON_MODE_KEY), 10,
 			);
+		}
+
+		if (!this.props.fake) {
+			// set up timer
+			this.endTimer = startTimer(
+				this.props.initialTime || (prefill ? 3 * 60 * 1000 : 0),
+			);
+
+			// save current game board
+			storePuzzle(this.props.puzzle);
+			storeAnswers(answers);
+			storeNotes(notes);
+
+			// store solution
+			this.solution = solvePuzzle(this.props.puzzle);
 		}
 
 		this.gameRef = createRef();
@@ -270,6 +270,7 @@ module.exports = class Game extends Component {
 		document.addEventListener("keyup", this.handleKeyUp);
 	}
 	componentWillUnmount() {
+		this.endTimer();
 		document.removeEventListener("click", this.handleDocClick);
 		document.removeEventListener("keydown", this.handleKeyDown);
 		document.removeEventListener("keyup", this.handleKeyUp);

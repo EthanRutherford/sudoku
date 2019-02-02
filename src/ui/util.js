@@ -3,8 +3,7 @@ const {storeTime} = require("../logic/game-store");
 // allow watching the current timer
 let timerWatcher = null;
 
-function startTimer(initialTime) {
-	let time = initialTime || 0;
+function startTimer(time) {
 	let lastStamp;
 	let frameId;
 	function animationFrame(stamp) {

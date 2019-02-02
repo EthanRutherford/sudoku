@@ -186,7 +186,8 @@ module.exports = class Options extends Component {
 			j({div: styles.section}, [
 				j({h3: styles.label}, "prefill pencil marks"),
 				j({div: styles.description}, [
-					"When enabled, pencil marks will automatically be filled at the start of a new game of the selected difficulties.",
+					"When enabled, pencil marks will automatically be filled at the start of a new game of the selected difficulties. ",
+					"Filling in pencil marks manually generally takes about 3 minutes, so completion time is adjusted by as much.",
 				]),
 				j([Select, {
 					value: this.state.notePrefill,
