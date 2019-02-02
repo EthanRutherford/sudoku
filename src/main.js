@@ -96,7 +96,8 @@ class App extends Component {
 
 			if (existingGame.puzzle != null) {
 				this.setState({
-					difficulty: existingGame.difficulty,
+					difficulty,
+					existingDifficulty: existingGame.difficulty,
 					warning: true,
 				});
 
@@ -177,6 +178,7 @@ class App extends Component {
 		const {
 			page,
 			difficulty,
+			existingDifficulty,
 			puzzle,
 			initialAnswers,
 			initialNotes,
@@ -260,7 +262,7 @@ class App extends Component {
 			}]),
 			this.state.warning && j([Warning, {
 				header: "Ongoing game",
-				content: `You currently have an ongoing ${difficulty} puzzle, do you want to abandon it?`,
+				content: `You currently have an ongoing ${existingDifficulty} puzzle, do you want to abandon it?`,
 				confirm: "start new game",
 				cancel: "cancel",
 				onConfirm: () => this.requestPuzzle(difficulty),
