@@ -288,6 +288,7 @@ module.exports = class Game extends Component {
 		const {selectedIndex} = this.state;
 		const canWrap = this.options.wrapMode === WRAP_MODES.on;
 		const sticky = this.options.wrapMode === WRAP_MODES.sticky;
+		event.preventDefault();
 
 		if (event.key > 0) {
 			this.setSelectedValue(Number.parseInt(event.key, 10));
@@ -298,9 +299,11 @@ module.exports = class Game extends Component {
 			event.key === "Delete"
 		) {
 			this.setSelectedValue(null);
+		} else if (event.key.toLowerCase() === "p") {
+			this.toggleNoteMode();
+		} else if (event.key.toLowerCase() === "b") {
+			this.toggleButtonMode();
 		} else if (selectedIndex != null) {
-			event.preventDefault();
-
 			if (event.key === "Tab") {
 				if (event.shiftKey) {
 					this.setSelectedIndex(Math.max(selectedIndex - 1, 0), true);
@@ -357,6 +360,14 @@ module.exports = class Game extends Component {
 					this.state.selectedValue,
 				);
 			}
+		} else if (
+			event.key === "Tab" ||
+			event.key === "ArrowUp" ||
+			event.key === "ArrowDown" ||
+			event.key === "ArrowLeft" ||
+			event.key === "ArrowRight"
+		) {
+			this.setSelectedIndex(0, true);
 		}
 	}
 	handleKeyUp(event) {
