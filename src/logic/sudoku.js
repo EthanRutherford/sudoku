@@ -160,7 +160,7 @@ function findBestCandidates(board, remaining, score) {
 	};
 }
 
-function eliminateGhosts(board, remaining) {
+function getNumberMap(board, remaining) {
 	const numberMap = {
 		1: new Set(),
 		2: new Set(),
@@ -179,6 +179,10 @@ function eliminateGhosts(board, remaining) {
 		}
 	}
 
+	return numberMap;
+}
+
+function eliminateLineGhosts(board, numberMap) {
 	let did = false;
 	for (let boxIndex = 0; boxIndex < 9; boxIndex++) {
 		const box = boxMap[boxIndex];
@@ -196,12 +200,48 @@ function eliminateGhosts(board, remaining) {
 
 			if (indices.every((index) => indexToRow[index] === rowIndex)) {
 				cells = rowMap[rowIndex].filter((index) =>
-					indexToBox[index] !== boxIndex && map.has(index),
+					map.has(index) && !indices.includes(index),
 				);
 			}
 			if (indices.every((index) => indexToColumn[index] === columnIndex)) {
 				cells = columnMap[columnIndex].filter((index) =>
-					indexToBox[index] !== boxIndex && map.has(index),
+					map.has(index) && !indices.includes(index),
+				);
+			}
+
+			if (cells && cells.length > 0) {
+				did = true;
+				for (const index of cells) {
+					board.potentials[index] = board.potentials[index].remove(number);
+					numberMap[number].delete(index);
+				}
+			}
+		}
+	}
+
+	return did;
+}
+
+function eliminateBoxGhosts(board, numberMap) {
+	const lines = rowMap.concat(columnMap);
+
+	let did = false;
+	for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+		const line = lines[lineIndex];
+		for (let number = 1; number <= 9; number++) {
+			const map = numberMap[number];
+			const indices = line.filter((index) => map.has(index));
+
+			if (indices.length < 2 || indices.length > 3) {
+				continue;
+			}
+
+			const boxIndex = indexToBox[indices[0]];
+			let cells = null;
+
+			if (indices.every((index) => indexToBox[index] === boxIndex)) {
+				cells = boxMap[boxIndex].filter((index) =>
+					map.has(index) && !indices.includes(index),
 				);
 			}
 
@@ -224,22 +264,24 @@ function eliminateNakedPairs(board, remaining) {
 
 	for (const set of sets) {
 		const empty = set.filter((index) => remaining.has(index));
+		if (empty.length < 3) {
+			continue;
+		}
 
-		for (const indexA of empty) {
-			for (const indexB of empty) {
-				const potentialsA = board.potentials[indexA];
-				const potentialsB = board.potentials[indexB];
+		for (let i = 0; i < empty.length; i++) {
+			for (let j = i + 1; j < empty.length; j++) {
+				const potentialsA = board.potentials[empty[i]];
+				const potentialsB = board.potentials[empty[j]];
 				const potentialValues = potentialsA.values;
 				if (
-					indexA !== indexB &&
 					potentialsA === potentialsB &&
 					potentialValues.length === 2
 				) {
 					for (const indexC of empty) {
 						const potentialsC = board.potentials[indexC];
-						if (indexC !== indexA && indexC !== indexB) {
+						if (indexC !== empty[i] && indexC !== empty[j]) {
 							board.potentials[indexC] = potentialsC.remove(potentialValues[0]).remove(potentialValues[1]);
-							did = did || (potentialsC !== board.potentials[indexC]);
+							did = did || !potentialsC.eq(board.potentials[indexC]);
 						}
 					}
 				}
@@ -271,8 +313,8 @@ function solveRecursive(board, remaining, score, solveData) {
 	// keep searching for a single logical answer, trying increasingly
 	// advanced techniques until a best candidate is found,
 	// or all techniques are exhausted.
+	let numberMap;
 	let searchResult = null;
-	let lastAttempt = 0;
 	while (true) {
 		searchResult = findBestCandidates(board, remaining, score);
 
@@ -286,17 +328,26 @@ function solveRecursive(board, remaining, score, solveData) {
 			break;
 		}
 
-		// clear out ghosts and try again
-		if (lastAttempt !== 1 && eliminateGhosts(board, remaining)) {
+		// set numbermap if null
+		if (numberMap == null) {
+			numberMap = getNumberMap(board, remaining);
+		}
+
+		// clear out line ghosts and try again
+		if (eliminateLineGhosts(board, numberMap)) {
 			score = Math.max(score, 1);
-			lastAttempt = 1;
+			continue;
+		}
+
+		// clear out box ghosts and try again
+		if (eliminateBoxGhosts(board, numberMap)) {
+			score = Math.max(score, 1);
 			continue;
 		}
 
 		// clear out naked pairs and try again
-		if (lastAttempt !== 2 && eliminateNakedPairs(board, remaining)) {
+		if (eliminateNakedPairs(board, remaining)) {
 			score = Math.max(score, 1);
-			lastAttempt = 2;
 			continue;
 		}
 

@@ -34,6 +34,9 @@ class BitSet extends Number {
 
 		return count;
 	}
+	eq(other) {
+		return this.valueOf() === other.valueOf();
+	}
 	toString() {
 		return String.fromCharCode(this + 32);
 	}
