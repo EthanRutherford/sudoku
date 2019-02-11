@@ -313,7 +313,6 @@ function solveRecursive(board, remaining, score, solveData) {
 	// keep searching for a single logical answer, trying increasingly
 	// advanced techniques until a best candidate is found,
 	// or all techniques are exhausted.
-	let numberMap;
 	let searchResult = null;
 	while (true) {
 		searchResult = findBestCandidates(board, remaining, score);
@@ -323,15 +322,18 @@ function solveRecursive(board, remaining, score, solveData) {
 			return false;
 		}
 
+		// if we're going fast, bail on advanced (expensive) techniques
+		if (solveData.goFast) {
+			break;
+		}
+
 		// we have a single candidate, go forward with it
 		if (searchResult.candidates.length === 1) {
 			break;
 		}
 
-		// set numbermap if null
-		if (numberMap == null) {
-			numberMap = getNumberMap(board, remaining);
-		}
+		// set numbermap for evaluating ghosts
+		const numberMap = getNumberMap(board, remaining);
 
 		// clear out line ghosts and try again
 		if (eliminateLineGhosts(board, numberMap)) {
@@ -399,7 +401,7 @@ function solveRecursive(board, remaining, score, solveData) {
 	return false;
 }
 
-function solveBoard(board, checkUnique = false) {
+function solveBoard(board, goFast = false, checkUnique = false) {
 	// populate the potential sets for all empty cells
 	// also create the list of unsolved cells
 	const remaining = new Set();
@@ -413,8 +415,16 @@ function solveBoard(board, checkUnique = false) {
 	}
 
 	// begin solving
-	const solveData = {checkUnique, score: null, board: null, isUnique: true};
+	const solveData = {
+		checkUnique,
+		goFast,
+		score: null,
+		board: null,
+		isUnique: true,
+	};
 	solveRecursive(board.clone(), remaining, 0, solveData);
+
+	// return relevant solve data
 	return {
 		board: solveData.board,
 		difficulty: solveData.score,
@@ -460,12 +470,11 @@ function createSolution() {
 
 	// run the solver. Since the solver picks candidates randomly,
 	// this will result in a random, but valid, full board.
-	return solveBoard(board).board;
+	return solveBoard(board, true).board;
 }
 
 function punchHoles(solution) {
 	let board = solution.clone();
-	let difficulty = 0;
 
 	// create pairs we can try to punch out.
 	// pairs are defined as a cell index i, which is reflected
@@ -482,12 +491,13 @@ function punchHoles(solution) {
 		nextBoard.values[index] = null;
 		nextBoard.values[80 - index] = null;
 
-		const result = solveBoard(nextBoard, true);
+		const result = solveBoard(nextBoard, true, true);
 		if (result.isUnique) {
 			board = nextBoard;
-			difficulty = result.difficulty;
 		}
 	}
+
+	const difficulty = solveBoard(board.clone()).difficulty;
 
 	return {board, difficulty};
 }
@@ -510,7 +520,7 @@ module.exports = {
 
 	getNeighbors,
 	makePuzzle,
-	solvePuzzle: (puzzle) => solveBoard(new Board(puzzle)).board.values,
+	solvePuzzle: (puzzle) => solveBoard(new Board(puzzle), true).board.values,
 	fillNotes: (puzzle, notes) => {
 		for (let i = 0; i < BOARD_SIZE; i++) {
 			if (puzzle[i] == null) {
