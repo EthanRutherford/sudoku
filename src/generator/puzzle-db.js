@@ -2,7 +2,7 @@ const DIFFICULTIES = ["easy", "medium", "hard", "expert"];
 
 function openDatabase() {
 	return new Promise((resolve, reject) => {
-		const request = indexedDB.open("sudoku", 5);
+		const request = indexedDB.open("sudoku", 6);
 
 		request.onupgradeneeded = function(event) {
 			const database = event.target.result;

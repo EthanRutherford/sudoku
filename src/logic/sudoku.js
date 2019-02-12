@@ -314,7 +314,7 @@ function eliminateNakedPairs(board, remaining) {
 			const potentialsB = board.potentials[indexB];
 
 			// if the pair has the same potentials
-			if (potentialsA === potentialsB) {
+			if (potentialsA.eq(potentialsB)) {
 				// remove the potentials from all other cells in the set
 				for (const indexC of empty) {
 					if (indexC !== indexA && indexC !== indexB) {
