@@ -14,8 +14,11 @@ async function createPuzzle(db, counts) {
 	for (let i = 0; i < DIFFICULTIES.length; i++) {
 		const level = difficultyLevels[i];
 		const name = DIFFICULTIES[i];
-		if (difficulty <= level && counts[i] < 100) {
-			await storePuzzle(db, name, puzzle);
+		if (difficulty <= level) {
+			if (counts[i] < 100) {
+				await storePuzzle(db, name, puzzle);
+			}
+
 			break;
 		}
 	}
