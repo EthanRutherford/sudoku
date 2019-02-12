@@ -127,6 +127,7 @@ function findBestCandidates(board, remaining, score) {
 	const sets = rows.concat(columns, boxes).filter((x) => x.length);
 
 	let setCandidates = new Array(10);
+	const setMaps = [];
 	for (const set of sets) {
 		const valueMap = set.reduce((m, index) => {
 			for (const value of board.potentials[index].values) {
@@ -140,10 +141,13 @@ function findBestCandidates(board, remaining, score) {
 			return m;
 		}, new Map());
 
+		setMaps.push(valueMap);
+
 		for (const [value, indices] of valueMap.entries()) {
 			if (indices.length < setCandidates.length) {
 				setCandidates = indices.map((index) => ({index, value}));
 
+				// if we find a single, return early
 				if (setCandidates.length === 1) {
 					return {candidates: setCandidates, cost: 0};
 				}
@@ -153,9 +157,11 @@ function findBestCandidates(board, remaining, score) {
 
 	return cellCandidates.length < setCandidates.length ? {
 		candidates: cellCandidates,
+		setMaps,
 		cost: 1,
 	} : {
 		candidates: setCandidates,
+		setMaps,
 		cost: 0,
 	};
 }
@@ -190,6 +196,7 @@ function eliminateLineGhosts(board, numberMap) {
 			const map = numberMap[number];
 			const indices = box.filter((index) => map.has(index));
 
+			// can't be a ghost unless it's two or three in the same line
 			if (indices.length < 2 || indices.length > 3) {
 				continue;
 			}
@@ -198,17 +205,18 @@ function eliminateLineGhosts(board, numberMap) {
 			const columnIndex = indexToColumn[indices[0]];
 			let cells = null;
 
+			// if every index is in the same line, we have a ghost
 			if (indices.every((index) => indexToRow[index] === rowIndex)) {
 				cells = rowMap[rowIndex].filter((index) =>
 					map.has(index) && !indices.includes(index),
 				);
-			}
-			if (indices.every((index) => indexToColumn[index] === columnIndex)) {
+			} else if (indices.every((index) => indexToColumn[index] === columnIndex)) {
 				cells = columnMap[columnIndex].filter((index) =>
 					map.has(index) && !indices.includes(index),
 				);
 			}
 
+			// remove potential value form affected cells
 			if (cells && cells.length > 0) {
 				did = true;
 				for (const index of cells) {
@@ -232,6 +240,7 @@ function eliminateBoxGhosts(board, numberMap) {
 			const map = numberMap[number];
 			const indices = line.filter((index) => map.has(index));
 
+			// can't be a ghost unless it fits in the same box
 			if (indices.length < 2 || indices.length > 3) {
 				continue;
 			}
@@ -239,12 +248,14 @@ function eliminateBoxGhosts(board, numberMap) {
 			const boxIndex = indexToBox[indices[0]];
 			let cells = null;
 
+			// if every index is in the same box, we have a ghost
 			if (indices.every((index) => indexToBox[index] === boxIndex)) {
 				cells = boxMap[boxIndex].filter((index) =>
 					map.has(index) && !indices.includes(index),
 				);
 			}
 
+			// remove potential value form affected cells
 			if (cells && cells.length > 0) {
 				did = true;
 				for (const index of cells) {
@@ -258,33 +269,171 @@ function eliminateBoxGhosts(board, numberMap) {
 	return did;
 }
 
+function choose2(array) {
+	const results = [];
+	for (let i = 0; i < array.length - 1; i++) {
+		for (let j = i + 1; j < array.length; j++) {
+			results.push([array[i], array[j]]);
+		}
+	}
+
+	return results;
+}
+
+function choose3(array) {
+	const results = [];
+	for (let i = 0; i < array.length - 2; i++) {
+		for (let j = i + 1; j < array.length - 1; j++) {
+			for (let k = j + 1; k < array.length; k++) {
+				results.push([array[i], array[j], array[k]]);
+			}
+		}
+	}
+
+	return results;
+}
+
 function eliminateNakedPairs(board, remaining) {
 	let did = false;
 	const sets = rowMap.concat(columnMap, boxMap);
 
 	for (const set of sets) {
 		const empty = set.filter((index) => remaining.has(index));
+
+		// if there are less than three cells, even if a pair is found,
+		// there won't be any other cells to update
 		if (empty.length < 3) {
 			continue;
 		}
 
-		for (let i = 0; i < empty.length; i++) {
-			for (let j = i + 1; j < empty.length; j++) {
-				const potentialsA = board.potentials[empty[i]];
-				const potentialsB = board.potentials[empty[j]];
-				const potentialValues = potentialsA.values;
-				if (
-					potentialsA === potentialsB &&
-					potentialValues.length === 2
-				) {
-					for (const indexC of empty) {
+		// get all pairs of cells with two potentials
+		const pairs = choose2(empty.filter((cell) => board.potentials[cell].size === 2));
+
+		for (const [indexA, indexB] of pairs) {
+			const potentialsA = board.potentials[indexA];
+			const potentialsB = board.potentials[indexB];
+
+			// if the pair has the same potentials
+			if (potentialsA === potentialsB) {
+				// remove the potentials from all other cells in the set
+				for (const indexC of empty) {
+					if (indexC !== indexA && indexC !== indexB) {
 						const potentialsC = board.potentials[indexC];
-						if (indexC !== empty[i] && indexC !== empty[j]) {
-							board.potentials[indexC] = potentialsC.remove(potentialValues[0]).remove(potentialValues[1]);
-							did = did || !potentialsC.eq(board.potentials[indexC]);
-						}
+						board.potentials[indexC] = potentialsC.diff(potentialsA);
+						did = did || !potentialsC.eq(board.potentials[indexC]);
 					}
 				}
+			}
+		}
+	}
+
+	return did;
+}
+
+function eliminateHiddenPairs(board, sets) {
+	let did = false;
+
+	for (const set of sets) {
+		const entries = [...set.entries()];
+
+		// if there are less than three values, even if a pair is found,
+		// there won't be any other values to remove
+		if (entries.length < 3) {
+			continue;
+		}
+
+		// get all pairs of values with two possible indices
+		const pairs = choose2(entries.filter((entry) => entry[1].length === 2));
+
+		for (const [[valueA, indicesA], [valueB, indicesB]] of pairs) {
+			// if the pair has the same indices
+			if (
+				indicesA[0] === indicesB[0] &&
+				indicesA[1] === indicesB[1]
+			) {
+				// remove all other values from the potentials
+				const index0 = indicesA[0];
+				const index1 = indicesA[1];
+				const potentials0 = board.potentials[index0];
+				const potentials1 = board.potentials[index1];
+				board.potentials[index0] = board.potentials[index1] = BitSet.from(valueA, valueB);
+				did = did || !board.potentials[index0].eq(potentials0) || !board.potentials[index1].eq(potentials1);
+			}
+		}
+	}
+
+	return did;
+}
+
+function eliminateNakedTriples(board, remaining) {
+	let did = false;
+	const sets = rowMap.concat(columnMap, boxMap);
+
+	for (const set of sets) {
+		const empty = set.filter((index) => remaining.has(index));
+
+		// if there are less than four cells, even if a triple is found,
+		// there won't be any other cells to update
+		if (empty.length < 4) {
+			continue;
+		}
+
+		// get all triples of cells with three or fewer potentials
+		const triples = choose3(empty.filter((cell) => board.potentials[cell].size <= 3));
+
+		for (const [indexA, indexB, indexC] of triples) {
+			const potentialsA = board.potentials[indexA];
+			const potentialsB = board.potentials[indexB];
+			const potentialsC = board.potentials[indexC];
+			const triple = potentialsA.union(potentialsB).union(potentialsC);
+
+			// if the triple has three potentials
+			if (triple.size === 3) {
+				// remove the potentials from all other cells in the set
+				for (const indexD of empty) {
+					if (indexD !== indexA && indexD !== indexB && indexD !== indexC) {
+						const potentialsD = board.potentials[indexD];
+						board.potentials[indexD] = potentialsD.diff(triple);
+						did = did || !potentialsD.eq(board.potentials[indexD]);
+					}
+				}
+			}
+		}
+	}
+
+	return did;
+}
+
+function eliminateHiddenTriples(board, sets) {
+	let did = false;
+
+	for (const set of sets) {
+		const entries = [...set.entries()];
+
+		// if there are less than four values, even if a triple is found,
+		// there won't be any other values to remove
+		if (entries.length < 4) {
+			continue;
+		}
+
+		// get all triples of values with three or fewer possible indices
+		const triples = choose3(entries.filter((entry) => entry[1].length <= 3));
+
+		for (const [[valueA, indicesA], [valueB, indicesB], [valueC, indicesC]] of triples) {
+			const triple = new Set(indicesA.concat(indicesB, indicesC));
+
+			// if the triple has 3 possible indices
+			if (triple.size === 3) {
+				// remove all other values from the potentials
+				const [index0, index1, index2] = triple.values();
+				const potentials0 = board.potentials[index0];
+				const potentials1 = board.potentials[index1];
+				const potentials2 = board.potentials[index2];
+				const potentials = BitSet.from(valueA, valueB, valueC);
+				board.potentials[index0] = potentials0.intersect(potentials);
+				board.potentials[index1] = potentials1.intersect(potentials);
+				board.potentials[index2] = potentials2.intersect(potentials);
+				did = did || !board.potentials[index0].eq(potentials0) || !board.potentials[index1].eq(potentials1) || !board.potentials[index2].eq(potentials2);
 			}
 		}
 	}
@@ -353,15 +502,33 @@ function solveRecursive(board, remaining, score, solveData) {
 			continue;
 		}
 
+		// clear out hidden pairs and try again
+		if (eliminateHiddenPairs(board, searchResult.setMaps)) {
+			score = Math.max(score, 2);
+			continue;
+		}
+
+		// clear out naked triples and try again
+		if (eliminateNakedTriples(board, remaining)) {
+			score = Math.max(score, 2);
+			continue;
+		}
+
+		// clear out hidden triples and try again
+		if (eliminateHiddenTriples(board, searchResult.setMaps)) {
+			score = Math.max(score, 2);
+			continue;
+		}
+
 		break;
 	}
 
 	const {candidates, cost} = searchResult;
 	score = Math.max(score, cost);
 
-	// if there's more than one branch, the score is at least a 2
+	// if there's more than one branch, the score is at least a 3
 	if (candidates.length > 1) {
-		score = Math.max(score, 1) + candidates.length - 1;
+		score = Math.max(score, 2) + candidates.length - 1;
 	}
 
 	// recursively attempt filling the board with possible values
@@ -497,7 +664,7 @@ function punchHoles(solution) {
 		}
 	}
 
-	const difficulty = solveBoard(board.clone()).difficulty;
+	const difficulty = solveBoard(board).difficulty;
 
 	return {board, difficulty};
 }

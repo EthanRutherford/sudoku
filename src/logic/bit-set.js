@@ -11,6 +11,15 @@ class BitSet extends Number {
 	has(bit) {
 		return !!(this & (1 << (bit - 1)));
 	}
+	union(other) {
+		return new BitSet(this | other);
+	}
+	intersect(other) {
+		return new BitSet(this & other);
+	}
+	diff(other) {
+		return new BitSet(this & ~other);
+	}
 	get values() {
 		let field = this;
 		const values = [];
@@ -41,6 +50,10 @@ class BitSet extends Number {
 		return String.fromCharCode(this + 32);
 	}
 }
+
+BitSet.from = function(...values) {
+	return values.reduce((set, value) => set.add(value), new BitSet());
+};
 
 BitSet.fromString = function(string) {
 	return new BitSet(string.charCodeAt(0) - 32);

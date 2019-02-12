@@ -8,7 +8,7 @@ const {
 
 // create a puzzle, and place it in the appropriate difficulty list
 async function createPuzzle(db, counts) {
-	const difficultyLevels = [0, 1, 5, Infinity];
+	const difficultyLevels = [0, 1, 2, Infinity];
 	const {puzzle, difficulty} = makePuzzle();
 
 	for (let i = 0; i < DIFFICULTIES.length; i++) {
