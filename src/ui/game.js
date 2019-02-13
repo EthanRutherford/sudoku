@@ -240,9 +240,12 @@ module.exports = class Game extends Component {
 		}
 
 		if (!this.props.fake) {
+			// using auto-check disables high score saving
+			const cheating = this.options.autoCheck === AUTO_CHECK_MODES.incorrect;
+			const initialTime = cheating ? Infinity : this.props.initialTime;
 			// set up timer
 			this.endTimer = startTimer(
-				this.props.initialTime || (prefill ? 3 * 60 * 1000 : 0),
+				initialTime || (prefill ? 3 * 60 * 1000 : 0),
 			);
 
 			// save current game board

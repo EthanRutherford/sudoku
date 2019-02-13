@@ -142,7 +142,9 @@ class App extends Component {
 		});
 	}
 	async winGame(score) {
-		await saveHighScore(this.state.difficulty, score);
+		if (score !== Infinity) {
+			await saveHighScore(this.state.difficulty, score);
+		}
 
 		this.setState({
 			page: PAGES.results,

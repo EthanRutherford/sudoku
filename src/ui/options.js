@@ -66,7 +66,7 @@ const WRAP_DESCRIPTIONS = {
 const AUTO_CHECK_DESCRIPTIONS = {
 	[AUTO_CHECK_MODES.off]: "The game will not inform you of any kind of error.",
 	[AUTO_CHECK_MODES.invalid]: "The game will inform you when a selected value conflicts with the current board.",
-	[AUTO_CHECK_MODES.incorrect]: "The game will inform you when a selected value does not match the solution.",
+	[AUTO_CHECK_MODES.incorrect]: "The game will inform you when a selected value does not match the solution. Note: high scores will be disabled when using this option.",
 };
 
 module.exports = class Options extends Component {

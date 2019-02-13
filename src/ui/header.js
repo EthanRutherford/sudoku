@@ -26,6 +26,10 @@ class Timer extends Component {
 		}
 	}
 	render() {
+		if (this.state.time === Infinity) {
+			return "N/A";
+		}
+
 		return prettifyTime(this.state.time);
 	}
 }
