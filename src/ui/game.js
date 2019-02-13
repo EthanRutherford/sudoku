@@ -146,7 +146,10 @@ function Controls(props) {
 	]);
 }
 
-function updateState(options, puzzle, answers, notes, solution, index, value) {
+function checkValidity(options, puzzle, answers, solution, index, value) {
+	if (options.autoCheck === AUTO_CHECK_MODES.off) {
+		return new Set();
+	}
 	if (
 		options.autoCheck === AUTO_CHECK_MODES.incorrect &&
 		solution[index] !== value
@@ -158,26 +161,26 @@ function updateState(options, puzzle, answers, notes, solution, index, value) {
 	for (const neighbor of getNeighbors(index)) {
 		// check for conflicts in all neighbors
 		const cellValue = puzzle[neighbor] || answers[neighbor];
-		if (
-			options.autoCheck === AUTO_CHECK_MODES.invalid &&
-			cellValue === value
-		) {
+		if (cellValue === value) {
 			invalidIndices.add(neighbor);
 		}
+	}
 
+	if (invalidIndices.size > 0) {
+		invalidIndices.add(index);
+	}
+
+	return invalidIndices;
+}
+
+function updateNotes(notes, index, value) {
+	for (const neighbor of getNeighbors(index)) {
 		// remove value from notes in all neighbors
 		notes[neighbor] = notes[neighbor].remove(value);
 	}
 
 	// clear notes for the given cell
 	notes[index] = new BitSet();
-
-	if (invalidIndices.size > 0) {
-		invalidIndices.add(index);
-		return invalidIndices;
-	}
-
-	return null;
 }
 
 function checkIsSolved(puzzle, answers, solution) {
@@ -438,12 +441,28 @@ module.exports = class Game extends Component {
 			}
 
 			if (value != null) {
+				if (!notes[index].has(value)) {
+					const invalidIndices = checkValidity(
+						this.options,
+						puzzle,
+						answers,
+						this.solution,
+						index,
+						value,
+					);
+
+					if (invalidIndices.size > 0) {
+						this.setState({invalidIndices});
+						return;
+					}
+				}
+
 				notes[index] = notes[index].toggle(value);
 			} else {
 				notes[index] = new BitSet();
 			}
 
-			this.setState({notes});
+			this.setState({notes, invalidIndices: null});
 			storeNotes(notes);
 		} else if (
 			index != null &&
@@ -452,20 +471,21 @@ module.exports = class Game extends Component {
 			(value == null || counts[value] < 9)
 		) {
 			if (value != null) {
-				const invalidIndices = updateState(
+				const invalidIndices = checkValidity(
 					this.options,
 					puzzle,
 					answers,
-					notes,
 					this.solution,
 					index,
 					value,
 				);
 
-				if (invalidIndices != null) {
+				if (invalidIndices.size > 0) {
 					this.setState({invalidIndices});
 					return;
 				}
+
+				updateNotes(notes, index, value);
 			}
 
 			answers[index] = value;

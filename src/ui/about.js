@@ -3,7 +3,7 @@ const styles = require("../styles/about");
 
 module.exports = function About() {
 	return j({div: styles.about}, [
-		j({h2: styles.title}, "Sudoku ver 1.4.3"),
+		j({h2: styles.title}, "Sudoku ver 1.4.4"),
 		j({div: styles.separator}),
 		j({div: styles.description}, [
 			j("p", `
@@ -28,7 +28,8 @@ module.exports = function About() {
 			track of more than the most recent patch number. Each change is simply
 			listed in reverse-chronological order.
 		`),
-		j({div: styles.number}, "ver 1.4.3"),
+		j({div: styles.number}, "ver 1.4.4"),
+		j({div: styles.change}, `respect auto-check option for notes as well as values`),
 		j({div: styles.change}, `prevent saving high scores when using auto-check`),
 		j({div: styles.change}, `fix bug preventing naked pair detection`),
 		j({div: styles.change}, `fix bug where easier puzzles can trickle into the wrong difficulty`),
