@@ -1,4 +1,4 @@
-const {Component} = require("react");
+const {Component, createRef} = require("react");
 const {render} = require("react-dom");
 const j = require("react-jenny");
 const requestPuzzle = require("./generator/request-puzzle");
@@ -80,6 +80,8 @@ class App extends Component {
 		window.onpopstate = (event) => {
 			this.setState(computeState(event.state));
 		};
+
+		this.gameRef = createRef();
 
 		this.requestPuzzle = this.requestPuzzle.bind(this);
 		this.resumePuzzle = this.resumePuzzle.bind(this);
@@ -206,7 +208,13 @@ class App extends Component {
 
 		if (page === PAGES.game) {
 			return [
-				j([Header, {difficulty, showBack: true, showTimer: true, key: 1}]),
+				j([Header, {
+					difficulty,
+					game: this.gameRef,
+					showBack: true,
+					showTimer: true,
+					key: 1,
+				}]),
 				j([Game, {
 					difficulty,
 					puzzle,
@@ -214,6 +222,7 @@ class App extends Component {
 					initialNotes,
 					initialTime,
 					winGame: this.winGame,
+					ref: this.gameRef,
 					key: 2,
 				}]),
 			];

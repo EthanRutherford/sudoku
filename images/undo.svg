@@ -11,14 +11,14 @@
    height="40"
    viewBox="0 0 40 40"
    version="1.1"
-   sodipodi:docname="update.svg"
+   sodipodi:docname="undo.svg"
    inkscape:version="0.92.3 (2405546, 2018-03-11)">
   <path
-     d="m 7,17 5,7 5,-7 H 15 V 14 H 37 L 9,10 v 7 z m 30,10 -5,-7 -5,7 h 2 v 2 H 7 l 28,5 v -7 z"
+     d="m 10,17 7,-5 v 2 l 17,4 -4,14 -12,-5 10,2 1,-8 -12,-1 v 2 z"
      inkscape:connector-curvature="0"
      style="fill:black" />
   <path
-     d="M 5,15 10,22 15,15 H 13 V 12 H 35 L 7,8 V 15 Z m 30,10 -5,-7 -5,7 h 2 v 2 H 5 l 28,5 v -7 z"
+     d="m 8,15 7,-5 v 2 l 17,4 -4,14 -12,-5 10,2 1,-8 -12,-1 v 2 z"
      inkscape:connector-curvature="0"
      style="fill:currentColor" />
 </svg>

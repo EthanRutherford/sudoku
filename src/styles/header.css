@@ -65,3 +65,17 @@
 	top: 0;
 	right: 0;
 }
+
+.undo-redo {
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+.update:active, .undo-redo>button:active {
+	color: var(--not-white);
+}
+
+.update:active path:nth-child(2), .undo-redo>button:active path:nth-child(2) {
+	transform: translate(1px, 1px);
+}

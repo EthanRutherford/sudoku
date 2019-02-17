@@ -173,13 +173,19 @@ function checkValidity(options, puzzle, answers, solution, index, value) {
 	return invalidIndices;
 }
 
-function updateNotes(notes, index, value) {
+function updateNotes(notes, changes, index, value) {
 	for (const neighbor of getNeighbors(index)) {
 		// remove value from notes in all neighbors
-		notes[neighbor] = notes[neighbor].remove(value);
+		const prevNotes = notes[neighbor];
+		notes[neighbor] = prevNotes.remove(value);
+
+		if (!prevNotes.eq(notes[neighbor])) {
+			changes[neighbor] = prevNotes;
+		}
 	}
 
 	// clear notes for the given cell
+	changes[index] = notes[index];
 	notes[index] = new BitSet();
 }
 
@@ -201,6 +207,24 @@ function countValues(puzzle, answers) {
 	}, {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0});
 }
 
+function applyChange(answers, notes, stack) {
+	const change = stack.pop();
+	const unChange = {};
+	for (const [index, value] of Object.entries(change)) {
+		if (value instanceof BitSet) {
+			unChange[index] = answers[index] || notes[index];
+			answers[index] = null;
+			notes[index] = value;
+		} else {
+			unChange[index] = answers[index] || notes[index];
+			answers[index] = value;
+			notes[index] = new BitSet();
+		}
+	}
+
+	return unChange;
+}
+
 module.exports = class Game extends Component {
 	constructor(...args) {
 		super(...args);
@@ -220,6 +244,8 @@ module.exports = class Game extends Component {
 			selectedValue: null,
 			invalidIndices: null,
 			noteMode: false,
+			undoStack: [],
+			redoStack: [],
 		};
 
 		// key holding state
@@ -269,6 +295,8 @@ module.exports = class Game extends Component {
 		this.setHoveredIndex = this.setHoveredIndex.bind(this);
 		this.setSelectedIndex = this.setSelectedIndex.bind(this);
 		this.setSelectedValue = this.setSelectedValue.bind(this);
+		this.undo = this.undo.bind(this);
+		this.redo = this.redo.bind(this);
 	}
 	componentDidMount() {
 		document.addEventListener("click", this.handleDocClick);
@@ -440,6 +468,7 @@ module.exports = class Game extends Component {
 				return;
 			}
 
+			const prevNotes = notes[index];
 			if (value != null) {
 				if (!notes[index].has(value)) {
 					const invalidIndices = checkValidity(
@@ -462,7 +491,18 @@ module.exports = class Game extends Component {
 				notes[index] = new BitSet();
 			}
 
-			this.setState({notes, invalidIndices: null});
+			let undoStack = this.state.undoStack;
+			if (!prevNotes.eq(notes[index])) {
+				undoStack = undoStack.concat({[index]: prevNotes});
+			}
+
+			this.setState({
+				notes,
+				invalidIndices: null,
+				undoStack,
+				redoStack: [],
+			});
+
 			storeNotes(notes);
 		} else if (
 			index != null &&
@@ -470,6 +510,7 @@ module.exports = class Game extends Component {
 			answers[index] !== value &&
 			(value == null || counts[value] < 9)
 		) {
+			const changes = {};
 			if (value != null) {
 				const invalidIndices = checkValidity(
 					this.options,
@@ -485,7 +526,12 @@ module.exports = class Game extends Component {
 					return;
 				}
 
-				updateNotes(notes, index, value);
+				updateNotes(notes, changes, index, value);
+				if (answers[index] != null) {
+					changes[index] = answers[index];
+				}
+			} else {
+				changes[index] = answers[index];
 			}
 
 			answers[index] = value;
@@ -494,6 +540,8 @@ module.exports = class Game extends Component {
 				notes,
 				counts: countValues(puzzle, answers),
 				invalidIndices: null,
+				undoStack: this.state.undoStack.concat(changes),
+				redoStack: [],
 			});
 
 			if (checkIsSolved(puzzle, answers, this.solution)) {
@@ -504,6 +552,48 @@ module.exports = class Game extends Component {
 				storeNotes(notes);
 			}
 		}
+	}
+	undo() {
+		this.setState((state) => {
+			if (state.undoStack.length === 0) {
+				return null;
+			}
+
+			const answers = [...this.state.answers];
+			const notes = [...this.state.notes];
+			const undoStack = [...state.undoStack];
+			const unChange = applyChange(answers, notes, undoStack);
+
+			return {
+				answers,
+				notes,
+				counts: countValues(this.props.puzzle, answers),
+				invalidIndices: null,
+				undoStack,
+				redoStack: state.redoStack.concat(unChange),
+			};
+		});
+	}
+	redo() {
+		this.setState((state) => {
+			if (state.redoStack.length === 0) {
+				return null;
+			}
+
+			const answers = [...this.state.answers];
+			const notes = [...this.state.notes];
+			const redoStack = [...state.redoStack];
+			const unChange = applyChange(answers, notes, redoStack);
+
+			return {
+				answers,
+				notes,
+				counts: countValues(this.props.puzzle, answers),
+				invalidIndices: null,
+				undoStack: state.undoStack.concat(unChange),
+				redoStack,
+			};
+		});
 	}
 	render() {
 		return j({div: {

@@ -1,6 +1,8 @@
 const {Component} = require("react");
 const j = require("react-jenny");
 const UpdateIcon = require("../../images/update");
+const UndoIcon = require("../../images/undo");
+const RedoIcon = require("../../images/redo");
 const {getOptions} = require("../logic/options");
 const {listenForUpdates} = require("../pwa/listen-for-updates");
 const {watchTimer, prettifyTime} = require("./util");
@@ -51,6 +53,13 @@ class NeedsUpdate extends Component {
 	}
 }
 
+function UndoRedoButtons(props) {
+	return j({div: styles.undoRedo}, [
+		j({button: {onClick: () => props.game.current.undo()}}, j([UndoIcon])),
+		j({button: {onClick: () => props.game.current.redo()}}, j([RedoIcon])),
+	]);
+}
+
 module.exports = function Header(props) {
 	const showTimer = props.showTimer && getOptions().timer;
 	const titleParts = ["Sudoku"];
@@ -67,6 +76,6 @@ module.exports = function Header(props) {
 			onClick: () => history.back(),
 		}}),
 		j({span: styles.title}, titleParts),
-		j([NeedsUpdate]),
+		props.game ? j([UndoRedoButtons, props]) : j([NeedsUpdate]),
 	]));
 };
