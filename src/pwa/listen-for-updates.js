@@ -1,3 +1,5 @@
+require("./broadcast-channel-polyfill");
+
 const updatesChannel = new BroadcastChannel("code-updates");
 
 module.exports = {
