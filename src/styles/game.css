@@ -25,6 +25,7 @@
 	background-color: white;
 	font-size: 6vmin;
 	line-height: 0;
+	cursor: pointer;
 	overflow: hidden;
 }
 .cell:not(:nth-child(9n)) {
@@ -53,6 +54,7 @@
 	width: calc(100%);
 	height: calc(100%);
 	border: 3px solid var(--carbon);
+	z-index: 5;
 }
 .selected-index:nth-child(3n):before {
 	border-right-width: 2px;
@@ -104,11 +106,12 @@
 	align-items: center;
 	position: absolute;
 	transform: translate(-50%, -50%);
-	width: 55%;
-	height: 55%;
+	width: 65%;
+	height: 65%;
 	color: var(--green);
 	font-size: 3vmin;
 	font-weight: bold;
+	z-index: 2;
 }
 .note-1, .note-2, .note-3 {
 	top: 20%;
@@ -132,6 +135,7 @@
 .hovered-note {
 	background-image: radial-gradient(closest-side, var(--green-steel-light), transparent);
 	color: var(--green-steel);
+	z-index: 1;
 }
 
 .controls {
