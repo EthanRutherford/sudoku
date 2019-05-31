@@ -304,7 +304,9 @@ module.exports = class Game extends Component {
 		document.addEventListener("keyup", this.handleKeyUp);
 	}
 	componentWillUnmount() {
+		if (this.endTimer instanceof Function) {
 		this.endTimer();
+		}
 		document.removeEventListener("click", this.handleDocClick);
 		document.removeEventListener("keydown", this.handleKeyDown);
 		document.removeEventListener("keyup", this.handleKeyUp);
