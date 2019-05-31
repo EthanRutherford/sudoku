@@ -339,6 +339,10 @@ module.exports = class Game extends Component {
 			this.toggleNoteMode();
 		} else if (event.key.toLowerCase() === "b") {
 			this.toggleButtonMode();
+		} else if (event.key.toLowerCase() === "z" && event.ctrlKey) {
+			this.undo();
+		} else if (event.key.toLowerCase() === "y" && event.ctrlKey) {
+			this.redo();
 		} else if (selectedIndex != null) {
 			if (event.key === "Tab") {
 				event.preventDefault();
