@@ -3,7 +3,7 @@ const styles = require("../styles/about");
 
 module.exports = function About() {
 	return j({div: styles.about}, [
-		j({h2: styles.title}, "Sudoku ver 1.4.6"),
+		j({h2: styles.title}, "Sudoku ver 1.4.7"),
 		j({div: styles.separator}),
 		j({div: styles.description}, [
 			j("p", `
@@ -28,8 +28,9 @@ module.exports = function About() {
 			track of more than the most recent patch number. Each change is simply
 			listed in reverse-chronological order.
 		`),
-		j({div: styles.number}, "ver 1.4.6"),
-		j({div: styles.change}, `fix loading screen bug`),
+		j({div: styles.number}, "ver 1.4.7"),
+		j({div: styles.change}, `improve tab handling`),
+		j({div: styles.change}, `fix loading animation crash`),
 		j({div: styles.change}, `add undo and redo buttons`),
 		j({div: styles.change}, `respect auto-check option for notes as well as values`),
 		j({div: styles.change}, `prevent saving high scores when using auto-check`),

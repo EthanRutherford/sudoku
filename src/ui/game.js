@@ -305,7 +305,7 @@ module.exports = class Game extends Component {
 	}
 	componentWillUnmount() {
 		if (this.endTimer instanceof Function) {
-		this.endTimer();
+			this.endTimer();
 		}
 		document.removeEventListener("click", this.handleDocClick);
 		document.removeEventListener("keydown", this.handleKeyDown);
@@ -325,7 +325,6 @@ module.exports = class Game extends Component {
 		const {selectedIndex} = this.state;
 		const canWrap = this.options.wrapMode === WRAP_MODES.on;
 		const sticky = this.options.wrapMode === WRAP_MODES.sticky;
-		event.preventDefault();
 
 		if (event.key > 0) {
 			this.setSelectedValue(Number.parseInt(event.key, 10));
@@ -342,11 +341,20 @@ module.exports = class Game extends Component {
 			this.toggleButtonMode();
 		} else if (selectedIndex != null) {
 			if (event.key === "Tab") {
+				event.preventDefault();
 				if (event.shiftKey) {
-					this.setSelectedIndex(Math.max(selectedIndex - 1, 0), true);
-				} else {
-					this.setSelectedIndex(Math.min(selectedIndex + 1, 80), true);
+					if (selectedIndex > 0) {
+						this.setSelectedIndex(selectedIndex - 1, true);
+					} else if (canWrap || (sticky && !this.held.tab)) {
+						this.setSelectedIndex(80);
+					}
+				} else if (selectedIndex < 80) {
+					this.setSelectedIndex(selectedIndex + 1, true);
+				} else if (canWrap || (sticky && !this.held.tab)) {
+					this.setSelectedIndex(0);
 				}
+
+				this.held.tab = true;
 			} else if (
 				event.key === "ArrowLeft" ||
 				event.key.toLowerCase() === "a"
@@ -392,6 +400,7 @@ module.exports = class Game extends Component {
 
 				this.held.down = true;
 			} else if (event.key === "Enter" && this.state.valueFirst) {
+				event.preventDefault();
 				this.setValue(
 					this.state.selectedIndex,
 					this.state.selectedValue,
@@ -404,6 +413,7 @@ module.exports = class Game extends Component {
 			event.key === "ArrowLeft" ||
 			event.key === "ArrowRight"
 		) {
+			event.preventDefault();
 			this.setSelectedIndex(0, true);
 		}
 	}
@@ -428,6 +438,8 @@ module.exports = class Game extends Component {
 			event.key.toLowerCase() === "s"
 		) {
 			this.held.down = false;
+		} else if (event.key === "Tab") {
+			this.held.tab = false;
 		}
 	}
 	toggleNoteMode() {
