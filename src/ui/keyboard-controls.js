@@ -24,9 +24,11 @@ const ACTIONS = {
 
 function parseAction(event) {
 	const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+	const code = event.code;
 
-	if (key > 0) {
-		return Number.parseInt(event.key, 10);
+	if (code.startsWith("Digit") || code.startsWith("Numpad")) {
+		const reg = /(Digit)|(Numpad)/;
+		return Number.parseInt(code.replace(reg, ""), 10);
 	}
 	if (["0", " ", "Backspace", "Delete"].includes(key)) {
 		return ACTIONS.delete;

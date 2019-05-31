@@ -332,11 +332,7 @@ module.exports = class Game extends Component {
 			return;
 		}
 
-		if (action > 0 && action < 10) {
-			this.setSelectedValue(action);
-		} else if (action === ACTIONS.delete) {
-			this.setSelectedValue(null);
-		} else if (action === ACTIONS.noteMode) {
+		if (action === ACTIONS.noteMode) {
 			this.toggleNoteMode();
 		} else if (action === ACTIONS.buttonMode) {
 			this.toggleButtonMode();
@@ -345,7 +341,12 @@ module.exports = class Game extends Component {
 		} else if (action === ACTIONS.redo) {
 			this.redo();
 		} else if (selectedIndex != null) {
-			if (action === ACTIONS.prev) {
+			if (action > 0 && action < 10) {
+				event.preventDefault();
+				this.setSelectedValue(action, event.ctrlKey);
+			} else if (action === ACTIONS.delete) {
+				this.setSelectedValue(null);
+			} else if (action === ACTIONS.prev) {
 				event.preventDefault();
 				if (selectedIndex > 0) {
 					this.setSelectedIndex(selectedIndex - 1, true);
@@ -452,20 +453,20 @@ module.exports = class Game extends Component {
 			this.setState({selectedIndex, invalidIndices: null});
 		}
 	}
-	setSelectedValue(selectedValue) {
+	setSelectedValue(selectedValue, noteOverride = false) {
 		if (this.state.valueFirst) {
 			this.setState({selectedValue, invalidIndices: null});
 		} else {
-			this.setValue(this.state.selectedIndex, selectedValue);
+			this.setValue(this.state.selectedIndex, selectedValue, noteOverride);
 		}
 	}
-	setValue(index, value) {
+	setValue(index, value, noteOverride = false) {
 		const puzzle = this.props.puzzle;
 		const answers = [...this.state.answers];
 		const notes = [...this.state.notes];
 		const counts = this.state.counts;
 
-		if (this.state.noteMode) {
+		if (this.state.noteMode || noteOverride) {
 			if (puzzle[index] != null || answers[index] != null) {
 				return;
 			}
