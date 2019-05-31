@@ -3,7 +3,7 @@ const styles = require("../styles/about");
 
 module.exports = function About() {
 	return j({div: styles.about}, [
-		j({h2: styles.title}, "Sudoku ver 1.5.1"),
+		j({h2: styles.title}, "Sudoku ver 1.5.2"),
 		j({div: styles.separator}),
 		j({div: styles.description}, [
 			j("p", `
@@ -28,7 +28,8 @@ module.exports = function About() {
 			track of more than the most recent patch number. Each change is simply
 			listed in reverse-chronological order.
 		`),
-		j({div: styles.number}, "ver 1.5.1"),
+		j({div: styles.number}, "ver 1.5.2"),
+		j({div: styles.change}, `refactor keyboard controls, fixing a few bugs`),
 		j({div: styles.change}, `add keyboard shortcuts for undo/redo`),
 		j({div: styles.number}, "ver 1.5.0"),
 		j({div: styles.change}, `minor improvements to styling of game elements`),

@@ -24,6 +24,7 @@ const {
 	PREFILL_LEVELS,
 	getOptions,
 } = require("../logic/options");
+const {ACTIONS, parseAction} = require("./keyboard-controls");
 const {startTimer} = require("./util");
 const styles = require("../styles/game");
 
@@ -326,43 +327,43 @@ module.exports = class Game extends Component {
 		const canWrap = this.options.wrapMode === WRAP_MODES.on;
 		const sticky = this.options.wrapMode === WRAP_MODES.sticky;
 
-		if (event.key > 0) {
-			this.setSelectedValue(Number.parseInt(event.key, 10));
-		} else if (
-			event.key === "0" ||
-			event.key === " " ||
-			event.key === "Backspace" ||
-			event.key === "Delete"
-		) {
+		const action = parseAction(event);
+		if (action == null) {
+			return;
+		}
+
+		if (action > 0 && action < 10) {
+			this.setSelectedValue(action);
+		} else if (action === ACTIONS.delete) {
 			this.setSelectedValue(null);
-		} else if (event.key.toLowerCase() === "p") {
+		} else if (action === ACTIONS.noteMode) {
 			this.toggleNoteMode();
-		} else if (event.key.toLowerCase() === "b") {
+		} else if (action === ACTIONS.buttonMode) {
 			this.toggleButtonMode();
-		} else if (event.key.toLowerCase() === "z" && event.ctrlKey) {
+		} else if (action === ACTIONS.undo) {
 			this.undo();
-		} else if (event.key.toLowerCase() === "y" && event.ctrlKey) {
+		} else if (action === ACTIONS.redo) {
 			this.redo();
 		} else if (selectedIndex != null) {
-			if (event.key === "Tab") {
+			if (action === ACTIONS.prev) {
 				event.preventDefault();
-				if (event.shiftKey) {
-					if (selectedIndex > 0) {
-						this.setSelectedIndex(selectedIndex - 1, true);
-					} else if (canWrap || (sticky && !this.held.tab)) {
-						this.setSelectedIndex(80);
-					}
-				} else if (selectedIndex < 80) {
+				if (selectedIndex > 0) {
+					this.setSelectedIndex(selectedIndex - 1, true);
+				} else if (canWrap || (sticky && !this.held.prev)) {
+					this.setSelectedIndex(80);
+				}
+
+				this.held.prev = true;
+			} else if (action === ACTIONS.next) {
+				event.preventDefault();
+				if (selectedIndex < 80) {
 					this.setSelectedIndex(selectedIndex + 1, true);
-				} else if (canWrap || (sticky && !this.held.tab)) {
+				} else if (canWrap || (sticky && !this.held.next)) {
 					this.setSelectedIndex(0);
 				}
 
-				this.held.tab = true;
-			} else if (
-				event.key === "ArrowLeft" ||
-				event.key.toLowerCase() === "a"
-			) {
+				this.held.next = true;
+			} else if (action === ACTIONS.left) {
 				if (selectedIndex % 9 > 0) {
 					this.setSelectedIndex(selectedIndex - 1, true);
 				} else if (canWrap || (sticky && !this.held.left)) {
@@ -370,10 +371,7 @@ module.exports = class Game extends Component {
 				}
 
 				this.held.left = true;
-			} else if (
-				event.key === "ArrowRight" ||
-				event.key.toLowerCase() === "d"
-			) {
+			} else if (action === ACTIONS.right) {
 				if (selectedIndex % 9 < 8) {
 					this.setSelectedIndex(selectedIndex + 1, true);
 				} else if (canWrap || (sticky && !this.held.right)) {
@@ -381,10 +379,7 @@ module.exports = class Game extends Component {
 				}
 
 				this.held.right = true;
-			} else if (
-				event.key === "ArrowUp" ||
-				event.key.toLowerCase() === "w"
-			) {
+			} else if (action === ACTIONS.up) {
 				if (selectedIndex > 8) {
 					this.setSelectedIndex(selectedIndex - 9, true);
 				} else if (canWrap || (sticky && !this.held.up)) {
@@ -392,10 +387,7 @@ module.exports = class Game extends Component {
 				}
 
 				this.held.up = true;
-			} else if (
-				event.key === "ArrowDown" ||
-				event.key.toLowerCase() === "s"
-			) {
+			} else if (action === ACTIONS.down) {
 				if (selectedIndex < 72) {
 					this.setSelectedIndex(selectedIndex + 9, true);
 				} else if (canWrap || (sticky && !this.held.down)) {
@@ -403,47 +395,39 @@ module.exports = class Game extends Component {
 				}
 
 				this.held.down = true;
-			} else if (event.key === "Enter" && this.state.valueFirst) {
+			} else if (action === ACTIONS.set && this.state.valueFirst) {
 				event.preventDefault();
 				this.setValue(
 					this.state.selectedIndex,
 					this.state.selectedValue,
 				);
 			}
-		} else if (
-			event.key === "Tab" ||
-			event.key === "ArrowUp" ||
-			event.key === "ArrowDown" ||
-			event.key === "ArrowLeft" ||
-			event.key === "ArrowRight"
-		) {
+		} else if ([
+			ACTIONS.next, ACTIONS.prev,
+			ACTIONS.left, ACTIONS.right, ACTIONS.up, ACTIONS.down,
+		].includes(action)) {
 			event.preventDefault();
 			this.setSelectedIndex(0, true);
 		}
 	}
 	handleKeyUp(event) {
-		if (
-			event.key === "ArrowLeft" ||
-			event.key.toLowerCase() === "a"
-		) {
+		const action = parseAction(event);
+		if (action == null) {
+			return;
+		}
+
+		if (action === ACTIONS.left) {
 			this.held.left = false;
-		} else if (
-			event.key === "ArrowRight" ||
-			event.key.toLowerCase() === "d"
-		) {
+		} else if (action === ACTIONS.right) {
 			this.held.right = false;
-		} else if (
-			event.key === "ArrowUp" ||
-			event.key.toLowerCase() === "w"
-		) {
+		} else if (action === ACTIONS.up) {
 			this.held.up = false;
-		} else if (
-			event.key === "ArrowDown" ||
-			event.key.toLowerCase() === "s"
-		) {
+		} else if (action === ACTIONS.down) {
 			this.held.down = false;
-		} else if (event.key === "Tab") {
-			this.held.tab = false;
+		} else if (action === ACTIONS.prev) {
+			this.held.prev = false;
+		} else if (action === ACTIONS.next) {
+			this.held.next = false;
 		}
 	}
 	toggleNoteMode() {
