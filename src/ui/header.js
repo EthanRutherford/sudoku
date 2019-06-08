@@ -1,4 +1,4 @@
-const {Component} = require("react");
+const {useState, useEffect} = require("react");
 const j = require("react-jenny");
 const UpdateIcon = require("../../images/update");
 const UndoIcon = require("../../images/undo");
@@ -8,49 +8,28 @@ const {listenForUpdates} = require("../pwa/listen-for-updates");
 const {watchTimer, prettifyTime} = require("./util");
 const styles = require("../styles/header");
 
-class Timer extends Component {
-	constructor(...args) {
-		super(...args);
+function Timer() {
+	const [time, setTime] = useState(0);
+	useEffect(() => {
+		watchTimer(setTime);
+		return () => watchTimer(null);
+	}, []);
 
-		this.state = {time: 0};
-
-		this.updateTime = this.updateTime.bind(this);
-	}
-	componentDidMount() {
-		watchTimer(this.updateTime);
-	}
-	componentWillUnmount() {
-		watchTimer(null);
-	}
-	updateTime(time) {
-		if (Math.floor(time / 1000) > Math.floor(this.state.time / 1000)) {
-			this.setState({time});
-		}
-	}
-	render() {
-		if (this.state.time === Infinity) {
-			return "N/A";
-		}
-
-		return prettifyTime(this.state.time);
-	}
+	return time === Infinity ? "N/A" : prettifyTime(time);
 }
 
-class NeedsUpdate extends Component {
-	constructor(...args) {
-		super(...args);
+function NeedsUpdate() {
+	const [showButton, setShowButton] = useState(false);
+	useEffect(() => {
+		listenForUpdates(() => setShowButton(true));
+		return () => listenForUpdates(null);
+	}, []);
 
-		this.state = {showButton: false};
-
-		listenForUpdates(() => this.setState({showButton: true}));
-	}
-	render() {
-		return this.state.showButton && j({button: {
-			className: styles.update,
-			onClick: () => location.reload(),
-			title: "click to install new version",
-		}}, j([UpdateIcon]));
-	}
+	return showButton && j({button: {
+		className: styles.update,
+		onClick: () => location.reload(),
+		title: "click to install new version",
+	}}, j([UpdateIcon]));
 }
 
 function UndoRedoButtons(props) {

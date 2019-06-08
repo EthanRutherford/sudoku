@@ -1,4 +1,4 @@
-const {Component} = require("react");
+const {useState, useEffect} = require("react");
 const j = require("react-jenny");
 const {getHighScores} = require("../logic/high-scores");
 const {prettifyTime, prettifyDate} = require("./util");
@@ -17,7 +17,7 @@ async function getFormattedScores(difficulty, score) {
 	if (score == null) {
 		return {
 			loading: false,
-			scoresToShow: mappedScores,
+			scores: mappedScores,
 			etcStart: false,
 			etcEnd: false,
 		};
@@ -27,61 +27,46 @@ async function getFormattedScores(difficulty, score) {
 	const matchIndex = found === -1 ? 100 : found;
 	const end = Math.max(10, Math.min(matchIndex + 5, highScores.length));
 	const start = end - 10;
-	const scoresToShow = mappedScores.slice(start, end);
+	const scores = mappedScores.slice(start, end);
 
 	return {
 		loading: false,
-		scoresToShow,
+		scores,
 		matchIndex,
 		etcStart: start > 0,
 		etcEnd: end < highScores.length,
 	};
 }
 
-module.exports = class ScoreList extends Component {
-	constructor(...args) {
-		super(...args);
+module.exports = function ScoreList(props) {
+	const [state, setState] = useState({loading: true, scores: []});
+	useEffect(() => {
+		getFormattedScores(props.difficulty, props.score).then(setState);
+	}, [props.difficulty]);
 
-		this.state = {
-			loading: true,
-			scoresToShow: [],
-		};
+	const {
+		loading,
+		scores,
+		matchIndex,
+		etcStart,
+		etcEnd,
+	} = state;
 
-		getFormattedScores(this.props.difficulty, this.props.score).then(
-			(state) => this.setState(state),
-		);
-	}
-	async componentWillReceiveProps(nextProps) {
-		this.setState(await getFormattedScores(
-			nextProps.difficulty,
-			nextProps.score,
-		));
-	}
-	render() {
-		const {
-			loading,
-			scoresToShow,
-			matchIndex,
-			etcStart,
-			etcEnd,
-		} = this.state;
-
-		return j({ul: styles.list}, [
-			etcStart && j({li: etc}, "•••"),
-			scoresToShow.map(({index, score, date}) =>
-				j({
-					li: {
-						className: matchIndex === index ? current : styles.listItem,
-						key: score,
-					},
-				}, [
-					j({div: styles.rank}, index + 1),
-					j({div: styles.date}, prettifyDate(date)),
-					j({div: styles.score}, prettifyTime(score)),
-				]),
-			),
-			etcEnd && j({li: etc}, "•••"),
-			scoresToShow.length === 0 && j({div: loading || none}),
-		]);
-	}
+	return j({ul: styles.list}, [
+		etcStart && j({li: etc}, "•••"),
+		scores.map(({index, score, date}) =>
+			j({
+				li: {
+					className: matchIndex === index ? current : styles.listItem,
+					key: score,
+				},
+			}, [
+				j({div: styles.rank}, index + 1),
+				j({div: styles.date}, prettifyDate(date)),
+				j({div: styles.score}, prettifyTime(score)),
+			]),
+		),
+		etcEnd && j({li: etc}, "•••"),
+		scores.length === 0 && j({div: loading || none}),
+	]);
 };

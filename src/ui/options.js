@@ -1,4 +1,4 @@
-const {Component} = require("react");
+const {useState, useEffect} = require("react");
 const j = require("react-jenny");
 const {
 	GUIDE_MODES,
@@ -69,175 +69,161 @@ const AUTO_CHECK_DESCRIPTIONS = {
 	[AUTO_CHECK_MODES.incorrect]: "The game will inform you when a selected value does not match the solution. Note: high scores will be disabled when using this option.",
 };
 
-module.exports = class Options extends Component {
-	constructor(...args) {
-		super(...args);
+module.exports = function Options() {
+	const [options, setOptions] = useState(getOptions());
+	const [canPrompt, setCanPrompt] = useState(false);
+	const [confirm, setConfirm] = useState(false);
+	useEffect(() => {
+		notifyCanPrompt(() => setCanPrompt(true));
+		return () => notifyCanPrompt(null);
+	}, []);
 
-		this.state = getOptions();
+	function updateOptions(change) {
+		setOptions((oldOptions) => {
+			const newOptions = {...oldOptions, ...change};
+			saveOptions(newOptions);
+			return newOptions;
+		});
 	}
-	componentDidMount() {
-		notifyCanPrompt(() => this.setState({canPrompt: true}));
-	}
-	componentWillUnmount() {
-		notifyCanPrompt(null);
-	}
-	updateOptions(state) {
-		this.setState(state, () => saveOptions(this.state));
-	}
-	render() {
-		return j({div: styles.options}, [
-			j({h2: styles.title}, "Options"),
-			j({div: styles.section}, [
-				j({h3: styles.label}, "show timer"),
-				j({div: styles.description}, [
-					"Controls whether or not the timer shows during games.",
-				]),
-				j([Select, {
-					value: this.state.timer,
-					onChange: (value) => this.updateOptions({
-						timer: value,
-					}),
-				}], [
-					{value: 0, display: "hide timer"},
-					{value: 1, display: "show timer"},
-				]),
+
+	return j({div: styles.options}, [
+		j({h2: styles.title}, "Options"),
+		j({div: styles.section}, [
+			j({h3: styles.label}, "show timer"),
+			j({div: styles.description}, [
+				"Controls whether or not the timer shows during games.",
 			]),
-			j({div: styles.section}, [
-				j({h3: styles.label}, "guide mode"),
-				j({div: styles.description}, [
-					getGuideDescription(this.state.guideMode),
-				]),
-				j([Select, {
-					value: this.state.guideMode.values,
-					onChange: (value) => this.updateOptions({
-						guideMode: this.state.guideMode.toggle(value),
-					}),
-				}], [
-					{value: GUIDE_MODES.neighbors, display: "neighbors"},
-					{value: GUIDE_MODES.values, display: "values"},
-					{value: GUIDE_MODES.notes, display: "pencil marks"},
-				]),
+			j([Select, {
+				value: options.timer,
+				onChange: (value) => updateOptions({timer: value}),
+			}], [
+				{value: 0, display: "hide timer"},
+				{value: 1, display: "show timer"},
 			]),
-			this.state.guideMode > 0 && j({div: styles.section}, [
-				j({h3: styles.label}, "hover mode"),
-				j({div: styles.description}, [
-					HOVER_DESCRIPTIONS[this.state.hoverMode],
-				]),
-				j([Select, {
-					value: this.state.hoverMode,
-					onChange: (value) => this.updateOptions({
-						hoverMode: value,
-					}),
-				}], [
-					{value: HOVER_MODES.off, display: "off"},
-					{value: HOVER_MODES.hoverOnly, display: "hover only"},
-					{value: HOVER_MODES.sticky, display: "sticky"},
-					{value: HOVER_MODES.hybrid, display: "hybrid"},
-				]),
+		]),
+		j({div: styles.section}, [
+			j({h3: styles.label}, "guide mode"),
+			j({div: styles.description}, [
+				getGuideDescription(options.guideMode),
 			]),
-			j({div: styles.section}, [
-				j({h3: styles.label}, "wrapping mode"),
-				j({div: styles.description}, [
-					WRAP_DESCRIPTIONS[this.state.wrapMode],
-				]),
-				j([Select, {
-					value: this.state.wrapMode,
-					onChange: (value) => this.updateOptions({
-						wrapMode: value,
-					}),
-				}], [
-					{value: WRAP_MODES.off, display: "off"},
-					{value: WRAP_MODES.sticky, display: "sticky"},
-					{value: WRAP_MODES.on, display: "on"},
-				]),
+			j([Select, {
+				value: options.guideMode.values,
+				onChange: (value) => updateOptions({
+					guideMode: options.guideMode.toggle(value),
+				}),
+			}], [
+				{value: GUIDE_MODES.neighbors, display: "neighbors"},
+				{value: GUIDE_MODES.values, display: "values"},
+				{value: GUIDE_MODES.notes, display: "pencil marks"},
 			]),
-			j({div: styles.section}, [
-				j({h3: styles.label}, "default button mode"),
-				j({div: styles.description}, [
-					"Determines what mode the buttons default to.",
-				]),
-				j([Select, {
-					value: this.state.buttonDefault,
-					onChange: (value) => this.updateOptions({
-						buttonDefault: value,
-					}),
-				}], [
-					{value: BUTTON_DEFAULTS.cellFirst, display: "cell first"},
-					{value: BUTTON_DEFAULTS.valueFirst, display: "value first"},
-					{value: BUTTON_DEFAULTS.lastUsed, display: "last used"},
-				]),
+		]),
+		options.guideMode > 0 && j({div: styles.section}, [
+			j({h3: styles.label}, "hover mode"),
+			j({div: styles.description}, [
+				HOVER_DESCRIPTIONS[options.hoverMode],
 			]),
-			j({div: styles.section}, [
-				j({h3: styles.label}, "auto-check"),
-				j({div: styles.description}, [
-					AUTO_CHECK_DESCRIPTIONS[this.state.autoCheck],
-				]),
-				j([Select, {
-					value: this.state.autoCheck,
-					onChange: (value) => this.updateOptions({
-						autoCheck: value,
-					}),
-				}], [
-					{value: AUTO_CHECK_MODES.off, display: "off"},
-					{value: AUTO_CHECK_MODES.invalid, display: "invalid cells"},
-					{value: AUTO_CHECK_MODES.incorrect, display: "incorrect value"},
-				]),
+			j([Select, {
+				value: options.hoverMode,
+				onChange: (value) => updateOptions({hoverMode: value}),
+			}], [
+				{value: HOVER_MODES.off, display: "off"},
+				{value: HOVER_MODES.hoverOnly, display: "hover only"},
+				{value: HOVER_MODES.sticky, display: "sticky"},
+				{value: HOVER_MODES.hybrid, display: "hybrid"},
 			]),
-			j({div: styles.section}, [
-				j({h3: styles.label}, "prefill pencil marks"),
-				j({div: styles.description}, [
-					"When enabled, pencil marks will automatically be filled at the start of a new game of the selected difficulties. ",
-					"Filling in pencil marks manually generally takes about 3 minutes, so completion time is adjusted by as much.",
-				]),
-				j([Select, {
-					value: this.state.notePrefill,
-					onChange: (value) => this.updateOptions({
-						notePrefill: value,
-					}),
-				}], [
-					{value: PREFILL_LEVELS.easy, display: "easy and higher"},
-					{value: PREFILL_LEVELS.medium, display: "medium and higher"},
-					{value: PREFILL_LEVELS.hard, display: "hard and higher"},
-					{value: PREFILL_LEVELS.expert, display: "expert only"},
-					{value: PREFILL_LEVELS.off, display: "none"},
-				]),
+		]),
+		j({div: styles.section}, [
+			j({h3: styles.label}, "wrapping mode"),
+			j({div: styles.description}, [
+				WRAP_DESCRIPTIONS[options.wrapMode],
 			]),
+			j([Select, {
+				value: options.wrapMode,
+				onChange: (value) => updateOptions({wrapMode: value}),
+			}], [
+				{value: WRAP_MODES.off, display: "off"},
+				{value: WRAP_MODES.sticky, display: "sticky"},
+				{value: WRAP_MODES.on, display: "on"},
+			]),
+		]),
+		j({div: styles.section}, [
+			j({h3: styles.label}, "default button mode"),
+			j({div: styles.description}, [
+				"Determines what mode the buttons default to.",
+			]),
+			j([Select, {
+				value: options.buttonDefault,
+				onChange: (value) => updateOptions({buttonDefault: value}),
+			}], [
+				{value: BUTTON_DEFAULTS.cellFirst, display: "cell first"},
+				{value: BUTTON_DEFAULTS.valueFirst, display: "value first"},
+				{value: BUTTON_DEFAULTS.lastUsed, display: "last used"},
+			]),
+		]),
+		j({div: styles.section}, [
+			j({h3: styles.label}, "auto-check"),
+			j({div: styles.description}, [
+				AUTO_CHECK_DESCRIPTIONS[options.autoCheck],
+			]),
+			j([Select, {
+				value: options.autoCheck,
+				onChange: (value) => updateOptions({autoCheck: value}),
+			}], [
+				{value: AUTO_CHECK_MODES.off, display: "off"},
+				{value: AUTO_CHECK_MODES.invalid, display: "invalid cells"},
+				{value: AUTO_CHECK_MODES.incorrect, display: "incorrect value"},
+			]),
+		]),
+		j({div: styles.section}, [
+			j({h3: styles.label}, "prefill pencil marks"),
+			j({div: styles.description}, [
+				"When enabled, pencil marks will automatically be filled at the start of a new game of the selected difficulties. ",
+				"Filling in pencil marks manually generally takes about 3 minutes, so completion time is adjusted by as much.",
+			]),
+			j([Select, {
+				value: options.notePrefill,
+				onChange: (value) => updateOptions({notePrefill: value}),
+			}], [
+				{value: PREFILL_LEVELS.easy, display: "easy and higher"},
+				{value: PREFILL_LEVELS.medium, display: "medium and higher"},
+				{value: PREFILL_LEVELS.hard, display: "hard and higher"},
+				{value: PREFILL_LEVELS.expert, display: "expert only"},
+				{value: PREFILL_LEVELS.off, display: "none"},
+			]),
+		]),
+		j({div: styles.separator}),
+		j({div: styles.section}, [
+			j({button: {
+				className: styles.button,
+				onClick: () => updateOptions(DEFAULT_OPTIONS),
+			}}, "reset to defaults"),
+		]),
+		j({div: styles.section}, [
+			j({button: {
+				className: styles.button,
+				onClick: () => setConfirm(true),
+			}}, "reset scores"),
+		]),
+		canPrompt && j({div: styles.section}, [
 			j({div: styles.separator}),
-			j({div: styles.section}, [
-				j({button: {
-					className: styles.button,
-					onClick: () => this.updateOptions(DEFAULT_OPTIONS),
-				}}, "reset to defaults"),
+			j({div: styles.description}, [
+				"The sudoku app can be installed to your homescreen. Click the button below, and you'll be able to launch the game as a standalone app. You can even play when offline!",
 			]),
-			j({div: styles.section}, [
-				j({button: {
-					className: styles.button,
-					onClick: () => this.setState({confirm: true}),
-				}}, "reset scores"),
-			]),
-			this.state.canPrompt && j({div: styles.section}, [
-				j({div: styles.separator}),
-				j({div: styles.description}, [
-					"The sudoku app can be installed to your homescreen. Click the button below, and you'll be able to launch the game as a standalone app. You can even play when offline!",
-				]),
-				j({button: {
-					className: styles.button,
-					onClick: () => promptForInstall().then(() => {
-						this.setState({canPrompt: false});
-					}),
-				}}, "add to homescreen"),
-			]),
-			this.state.confirm && j([Warning, {
-				header: "Are you sure?",
-				content: "This will wipe all your saves, and cannot be undone!",
-				confirm: "delete anyway",
-				cancel: "cancel",
-				onConfirm: () => {
-					resetAllScores();
-					this.setState({confirm: false});
-				},
-				onCancel: () => this.setState({confirm: false}),
-			}]),
-		]);
-	}
+			j({button: {
+				className: styles.button,
+				onClick: () => promptForInstall().then(() => setCanPrompt(false)),
+			}}, "add to homescreen"),
+		]),
+		confirm && j([Warning, {
+			header: "Are you sure?",
+			content: "This will wipe all your saves, and cannot be undone!",
+			confirm: "delete anyway",
+			cancel: "cancel",
+			onConfirm: () => {
+				resetAllScores();
+				setConfirm(false);
+			},
+			onCancel: () => setConfirm(false),
+		}]),
+	]);
 };
