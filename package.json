@@ -4,7 +4,7 @@
   "main": "don't be daft",
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "no thanks",
   "scripts": {
     "build": "webpack --env prod",
     "watch": "start webpack --watch",
@@ -17,11 +17,19 @@
     "react-jenny": "^1.1.0"
   },
   "devDependencies": {
-    "@svgr/webpack": "^4.1.0",
+    "@svgr/webpack": "^4.3.0",
     "css-loader": "^2.1.0",
     "mini-css-extract-plugin": "^0.5.0",
     "webpack": "^4.28.3",
     "webpack-cli": "^3.2.0",
-    "webpack-dev-server": "^3.2.1"
-  }
+    "webpack-dev-server": "^3.7.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EthanRutherford/sudoku.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EthanRutherford/sudoku/issues"
+  },
+  "homepage": "https://github.com/EthanRutherford/sudoku"
 }
