@@ -1,13 +1,7 @@
 const j = require("react-jenny");
+const DIFFICULTIES = require("../logic/difficulties");
 const {getStoredGame} = require("../logic/game-store");
 const styles = require("../styles/menu");
-
-const DIFFICULTIES = [
-	"easy",
-	"medium",
-	"hard",
-	"expert",
-];
 
 module.exports = function Menu(props) {
 	const canResume = getStoredGame().puzzle != null;

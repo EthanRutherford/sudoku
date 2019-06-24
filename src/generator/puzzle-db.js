@@ -1,8 +1,8 @@
-const DIFFICULTIES = ["easy", "medium", "hard", "expert"];
+const DIFFICULTIES = require("../logic/difficulties");
 
 function openDatabase() {
 	return new Promise((resolve, reject) => {
-		const request = indexedDB.open("sudoku", 6);
+		const request = indexedDB.open("sudoku", 7);
 
 		request.onupgradeneeded = function(event) {
 			const database = event.target.result;
@@ -78,7 +78,6 @@ function countPuzzles(db, difficulty) {
 }
 
 module.exports = {
-	DIFFICULTIES,
 	openDatabase,
 	storePuzzle,
 	getPuzzle,

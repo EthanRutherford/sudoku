@@ -1,10 +1,9 @@
 const {useState} = require("react");
 const j = require("react-jenny");
+const DIFFICULTIES = require("../logic/difficulties");
 const Select = require("./select");
 const ScoreList = require("./score-list");
 const styles = require("../styles/records");
-
-const DIFFICULTIES = ["easy", "medium", "hard", "expert"];
 
 module.exports = function Records() {
 	const [difficulty, setDifficulty] = useState("easy");

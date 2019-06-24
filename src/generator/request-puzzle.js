@@ -1,5 +1,5 @@
+const DIFFICULTIES = require("../logic/difficulties");
 const {
-	DIFFICULTIES,
 	openDatabase,
 	getPuzzle,
 	deletePuzzle,

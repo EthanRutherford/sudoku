@@ -1,4 +1,5 @@
 const BitSet = require("./bit-set");
+const chooseK = require("./choose-k");
 
 const ROW_SIZE = 9;
 const BOARD_SIZE = 81;
@@ -190,8 +191,7 @@ function getNumberMap(board, remaining) {
 
 function eliminateLineGhosts(board, numberMap) {
 	let did = false;
-	for (let boxIndex = 0; boxIndex < 9; boxIndex++) {
-		const box = boxMap[boxIndex];
+	for (const box of boxMap) {
 		for (let number = 1; number <= 9; number++) {
 			const map = numberMap[number];
 			const indices = box.filter((index) => map.has(index));
@@ -234,8 +234,7 @@ function eliminateBoxGhosts(board, numberMap) {
 	const lines = rowMap.concat(columnMap);
 
 	let did = false;
-	for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-		const line = lines[lineIndex];
+	for (const line of lines) {
 		for (let number = 1; number <= 9; number++) {
 			const map = numberMap[number];
 			const indices = line.filter((index) => map.has(index));
@@ -269,58 +268,37 @@ function eliminateBoxGhosts(board, numberMap) {
 	return did;
 }
 
-function choose2(array) {
-	const results = [];
-	for (let i = 0; i < array.length - 1; i++) {
-		for (let j = i + 1; j < array.length; j++) {
-			results.push([array[i], array[j]]);
-		}
-	}
-
-	return results;
-}
-
-function choose3(array) {
-	const results = [];
-	for (let i = 0; i < array.length - 2; i++) {
-		for (let j = i + 1; j < array.length - 1; j++) {
-			for (let k = j + 1; k < array.length; k++) {
-				results.push([array[i], array[j], array[k]]);
-			}
-		}
-	}
-
-	return results;
-}
-
-function eliminateNakedPairs(board, remaining) {
+function eliminateNakedSubsets(board, remaining, size) {
 	let did = false;
 	const sets = rowMap.concat(columnMap, boxMap);
 
 	for (const set of sets) {
 		const empty = set.filter((index) => remaining.has(index));
 
-		// if there are less than three cells, even if a pair is found,
+		// if there aren't more than 'size' cells, even if a set is found,
 		// there won't be any other cells to update
-		if (empty.length < 3) {
+		if (empty.length <= size) {
 			continue;
 		}
 
-		// get all pairs of cells with two potentials
-		const pairs = choose2(empty.filter((cell) => board.potentials[cell].size === 2));
+		// get all sets of cells with 'size' or fewer potentials
+		const groups = chooseK(empty.filter((cell) => board.potentials[cell].size <= size), size);
 
-		for (const [indexA, indexB] of pairs) {
-			const potentialsA = board.potentials[indexA];
-			const potentialsB = board.potentials[indexB];
+		for (const indices of groups) {
+			const indicesSet = new Set(indices);
+			const potentials = indices.reduce(
+				(set, index) => set.union(board.potentials[index]),
+				new BitSet(0),
+			);
 
-			// if the pair has the same potentials
-			if (potentialsA.eq(potentialsB)) {
+			// if there are 'size' potentials
+			if (potentials.size === size) {
 				// remove the potentials from all other cells in the set
-				for (const indexC of empty) {
-					if (indexC !== indexA && indexC !== indexB) {
-						const potentialsC = board.potentials[indexC];
-						board.potentials[indexC] = potentialsC.diff(potentialsA);
-						did = did || !potentialsC.eq(board.potentials[indexC]);
+				for (const emptyIndex of empty) {
+					if (!indicesSet.has(emptyIndex)) {
+						const emptyPotentials = board.potentials[emptyIndex];
+						board.potentials[emptyIndex] = emptyPotentials.diff(potentials);
+						did = did || !emptyPotentials.eq(board.potentials[emptyIndex]);
 					}
 				}
 			}
@@ -330,72 +308,32 @@ function eliminateNakedPairs(board, remaining) {
 	return did;
 }
 
-function eliminateHiddenPairs(board, sets) {
+function eliminateHiddenSubsets(board, sets, size) {
 	let did = false;
 
 	for (const set of sets) {
 		const entries = [...set.entries()];
 
-		// if there are less than three values, even if a pair is found,
+		// if there aren't more than 'size' values, even if a set is found,
 		// there won't be any other values to remove
-		if (entries.length < 3) {
+		if (entries.length <= size) {
 			continue;
 		}
 
-		// get all pairs of values with two possible indices
-		const pairs = choose2(entries.filter((entry) => entry[1].length === 2));
+		// get all sets of values with 'size' or fewer possible indices
+		const groups = chooseK(entries.filter((entry) => entry[1].length <= size), size);
 
-		for (const [[valueA, indicesA], [valueB, indicesB]] of pairs) {
-			// if the pair has the same indices
-			if (
-				indicesA[0] === indicesB[0] &&
-				indicesA[1] === indicesB[1]
-			) {
-				// remove all other values from the potentials
-				const index0 = indicesA[0];
-				const index1 = indicesA[1];
-				const potentials0 = board.potentials[index0];
-				const potentials1 = board.potentials[index1];
-				board.potentials[index0] = board.potentials[index1] = BitSet.from(valueA, valueB);
-				did = did || !board.potentials[index0].eq(potentials0) || !board.potentials[index1].eq(potentials1);
-			}
-		}
-	}
+		for (const result of groups) {
+			const indices = new Set(result.flatMap((item) => item[1]));
 
-	return did;
-}
-
-function eliminateNakedTriples(board, remaining) {
-	let did = false;
-	const sets = rowMap.concat(columnMap, boxMap);
-
-	for (const set of sets) {
-		const empty = set.filter((index) => remaining.has(index));
-
-		// if there are less than four cells, even if a triple is found,
-		// there won't be any other cells to update
-		if (empty.length < 4) {
-			continue;
-		}
-
-		// get all triples of cells with three or fewer potentials
-		const triples = choose3(empty.filter((cell) => board.potentials[cell].size <= 3));
-
-		for (const [indexA, indexB, indexC] of triples) {
-			const potentialsA = board.potentials[indexA];
-			const potentialsB = board.potentials[indexB];
-			const potentialsC = board.potentials[indexC];
-			const triple = potentialsA.union(potentialsB).union(potentialsC);
-
-			// if the triple has three potentials
-			if (triple.size === 3) {
-				// remove the potentials from all other cells in the set
-				for (const indexD of empty) {
-					if (indexD !== indexA && indexD !== indexB && indexD !== indexC) {
-						const potentialsD = board.potentials[indexD];
-						board.potentials[indexD] = potentialsD.diff(triple);
-						did = did || !potentialsD.eq(board.potentials[indexD]);
-					}
+			// if the set has 'size' possible indices
+			if (indices.size === size) {
+				// remove all other values from the potentials for these indices
+				const potentials = BitSet.from(...result.map((item) => item[0]));
+				for (const index of indices) {
+					const potentialsX = board.potentials[index];
+					board.potentials[index] = potentialsX.intersect(potentials);
+					did = did || !board.potentials[index].eq(potentialsX);
 				}
 			}
 		}
@@ -404,38 +342,67 @@ function eliminateNakedTriples(board, remaining) {
 	return did;
 }
 
-function eliminateHiddenTriples(board, sets) {
+function getSwordfishLines(lineMap, valueMap) {
+	return lineMap.reduce((resultLines, line) => {
+		const indices = line.reduce((results, index) => {
+			if (valueMap.has(index)) {
+				results.push(index);
+			}
+
+			return results;
+		}, []);
+
+		if (indices.length === 2) {
+			resultLines.push(indices);
+		}
+
+		return resultLines;
+	}, []);
+}
+
+function checkSwordfish(board, number, sets, indexToLine, lineMap, valueMap) {
 	let did = false;
 
 	for (const set of sets) {
-		const entries = [...set.entries()];
+		const lineIndices = set.flat();
+		const lines = [
+			...new Set(lineIndices.map((index) => indexToLine[index])),
+		];
+		if (lines.length === set.length) {
+			const swordFish = new Set(lineIndices);
+			const indices = lines.flatMap((line) => lineMap[line]).filter(
+				(index) => board.values[index] == null && !swordFish.has(index),
+			);
 
-		// if there are less than four values, even if a triple is found,
-		// there won't be any other values to remove
-		if (entries.length < 4) {
-			continue;
-		}
-
-		// get all triples of values with three or fewer possible indices
-		const triples = choose3(entries.filter((entry) => entry[1].length <= 3));
-
-		for (const [[valueA, indicesA], [valueB, indicesB], [valueC, indicesC]] of triples) {
-			const triple = new Set(indicesA.concat(indicesB, indicesC));
-
-			// if the triple has 3 possible indices
-			if (triple.size === 3) {
-				// remove all other values from the potentials
-				const [index0, index1, index2] = triple.values();
-				const potentials0 = board.potentials[index0];
-				const potentials1 = board.potentials[index1];
-				const potentials2 = board.potentials[index2];
-				const potentials = BitSet.from(valueA, valueB, valueC);
-				board.potentials[index0] = potentials0.intersect(potentials);
-				board.potentials[index1] = potentials1.intersect(potentials);
-				board.potentials[index2] = potentials2.intersect(potentials);
-				did = did || !board.potentials[index0].eq(potentials0) || !board.potentials[index1].eq(potentials1) || !board.potentials[index2].eq(potentials2);
+			for (const index of indices) {
+				const potentials = board.potentials[index];
+				if (potentials.has(number)) {
+					did = true;
+					board.potentials[index] = potentials.remove(number);
+					valueMap.delete(index);
+				}
 			}
 		}
+	}
+
+	return did;
+}
+
+function eliminateSwordfish(board, numberMap, size) {
+	let did = false;
+
+	for (let number = 1; number <= 9; number++) {
+		const map = numberMap[number];
+
+		const rowSets = chooseK(getSwordfishLines(rowMap, map), size);
+		did = did || checkSwordfish(
+			board, number, rowSets, indexToColumn, columnMap, map,
+		);
+
+		const columnSets = chooseK(getSwordfishLines(columnMap, map), size);
+		did = did || checkSwordfish(
+			board, number, columnSets, indexToRow, rowMap, map,
+		);
 	}
 
 	return did;
@@ -497,26 +464,50 @@ function solveRecursive(board, remaining, score, solveData) {
 		}
 
 		// clear out naked pairs and try again
-		if (eliminateNakedPairs(board, remaining)) {
+		if (eliminateNakedSubsets(board, remaining, 2)) {
 			score = Math.max(score, 1);
 			continue;
 		}
 
 		// clear out hidden pairs and try again
-		if (eliminateHiddenPairs(board, searchResult.setMaps)) {
+		if (eliminateHiddenSubsets(board, searchResult.setMaps, 2)) {
 			score = Math.max(score, 2);
 			continue;
 		}
 
 		// clear out naked triples and try again
-		if (eliminateNakedTriples(board, remaining)) {
+		if (eliminateNakedSubsets(board, remaining, 3)) {
 			score = Math.max(score, 2);
 			continue;
 		}
 
 		// clear out hidden triples and try again
-		if (eliminateHiddenTriples(board, searchResult.setMaps)) {
+		if (eliminateHiddenSubsets(board, searchResult.setMaps, 3)) {
 			score = Math.max(score, 2);
+			continue;
+		}
+
+		// clear out naked quads and try again
+		if (eliminateNakedSubsets(board, remaining, 4)) {
+			score = Math.max(score, 3);
+			continue;
+		}
+
+		// clear out hidden quads and try again
+		if (eliminateHiddenSubsets(board, searchResult.setMaps, 4)) {
+			score = Math.max(score, 3);
+			continue;
+		}
+
+		// clear out xwings and try again
+		if (eliminateSwordfish(board, numberMap, 2)) {
+			score = Math.max(score, 3);
+			continue;
+		}
+
+		// clear out swordfish and try again
+		if (eliminateSwordfish(board, numberMap, 3)) {
+			score = Math.max(score, 3);
 			continue;
 		}
 
@@ -528,7 +519,7 @@ function solveRecursive(board, remaining, score, solveData) {
 
 	// if there's more than one branch, the score is at least a 3
 	if (candidates.length > 1) {
-		score = Math.max(score, 2) + candidates.length - 1;
+		score = Math.max(score, 3) + candidates.length - 1;
 	}
 
 	// recursively attempt filling the board with possible values
