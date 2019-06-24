@@ -35,6 +35,11 @@ module.exports = function Menu(props) {
 					className: styles.button,
 					onClick: props.openAbout,
 				}}, "about"),
+				j({div: {
+					className: styles.copyright,
+				}}, [
+					"© 2019", j("br"), "Ethan Rutherford",
+				]),
 			]),
 		]),
 	]);

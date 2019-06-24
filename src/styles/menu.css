@@ -45,6 +45,16 @@
 	margin-bottom: 10px;
 }
 
+.copyright {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 50px;
+	width: 100%;
+	font-size: var(--tiny);
+	text-align: center;
+}
+
 @media (max-width: 400px) {
 	.columns {
 		width: 100%;
