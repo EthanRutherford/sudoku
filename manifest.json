@@ -3,7 +3,7 @@
 	"short_name": "Sudoku",
 	"description": "Sudoku puzzle game",
 	"icons": [{
-	"src": "images/icons/128.png",
+		"src": "images/icons/128.png",
 		"sizes": "128x128",
 		"type": "image/png"
 	}, {

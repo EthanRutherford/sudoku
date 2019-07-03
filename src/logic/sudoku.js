@@ -517,7 +517,7 @@ function solveRecursive(board, remaining, score, solveData) {
 	const {candidates, cost} = searchResult;
 	score = Math.max(score, cost);
 
-	// if there's more than one branch, the score is at least a 3
+	// if there's more than one branch, the score is at least a 4
 	if (candidates.length > 1) {
 		score = Math.max(score, 3) + candidates.length - 1;
 	}
