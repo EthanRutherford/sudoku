@@ -20,13 +20,18 @@ const sampleStart = performance.now();
 let min = Infinity;
 let max = 0;
 let avg = 0;
-const set = new Set();
+const set = {};
 for (let i = 0; i < 1000; i++) {
 	const {difficulty} = makePuzzle();
 	min = Math.min(min, difficulty);
 	max = Math.max(max, difficulty);
 	avg += difficulty / 1000;
-	set.add(difficulty);
+
+	if (set[difficulty] == null) {
+		set[difficulty] = 0;
+	}
+
+	set[difficulty]++;
 }
 
 const sampleEnd = performance.now();
@@ -35,7 +40,10 @@ console.log(`Sampling complete | took ${sampleEnd - sampleStart}ms`);
 console.log("Difficulty results:");
 console.log(`  - range  : ${min} to ${max}`);
 console.log(`  - average: ${avg}`);
-console.log("  - results: ", [...set.values()].sort((a, b) => a - b).join(", "));
+for (const key of Object.keys(set).sort((a, b) => a - b)) {
+	const count = set[key];
+	console.log(`  - ${key}: ${count} puzzle${count > 1 ? "s" : ""}`);
+}
 console.log("");
 
 console.log("Generating sample puzzle...");
