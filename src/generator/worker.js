@@ -38,9 +38,10 @@ async function checkForEmptyDifficulty(db) {
 		await createPuzzle(db, counts);
 	}
 
-	const aListWasEmpty = counts.includes(0);
+	const shortestCount = counts.reduce((min, cur) => Math.min(min, cur), 100);
+	const waitTime = shortestCount < 4 ? shortestCount * 100 : 1000;
 
-	setTimeout(() => checkForEmptyDifficulty(db), aListWasEmpty ? 0 : 2000);
+	setTimeout(() => checkForEmptyDifficulty(db), waitTime);
 }
 
 (async function start() {

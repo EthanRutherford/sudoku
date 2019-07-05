@@ -369,9 +369,9 @@ function checkSwordfish(board, number, sets, indexToLine, lineMap, valueMap) {
 			...new Set(lineIndices.map((index) => indexToLine[index])),
 		];
 		if (lines.length === set.length) {
-			const swordFish = new Set(lineIndices);
+			const swordfish = new Set(lineIndices);
 			const indices = lines.flatMap((line) => lineMap[line]).filter(
-				(index) => board.values[index] == null && !swordFish.has(index),
+				(index) => board.values[index] == null && !swordfish.has(index),
 			);
 
 			for (const index of indices) {
@@ -445,6 +445,12 @@ function solveRecursive(board, remaining, score, solveData) {
 
 		// we have a single candidate, go forward with it
 		if (searchResult.candidates.length === 1) {
+			if (searchResult.cost === 1) {
+				solveData.counts.nakedSingle++;
+			} else {
+				solveData.counts.hiddenSingle++;
+			}
+
 			break;
 		}
 
@@ -454,60 +460,70 @@ function solveRecursive(board, remaining, score, solveData) {
 		// clear out line ghosts and try again
 		if (eliminateLineGhosts(board, numberMap)) {
 			score = Math.max(score, 1);
+			solveData.counts.lineGhost++;
 			continue;
 		}
 
 		// clear out box ghosts and try again
 		if (eliminateBoxGhosts(board, numberMap)) {
 			score = Math.max(score, 1);
+			solveData.counts.boxGhost++;
 			continue;
 		}
 
 		// clear out naked pairs and try again
 		if (eliminateNakedSubsets(board, remaining, 2)) {
 			score = Math.max(score, 1);
+			solveData.counts.nakedDouble++;
 			continue;
 		}
 
 		// clear out hidden pairs and try again
 		if (eliminateHiddenSubsets(board, searchResult.setMaps, 2)) {
 			score = Math.max(score, 2);
+			solveData.counts.hiddenDouble++;
 			continue;
 		}
 
 		// clear out naked triples and try again
 		if (eliminateNakedSubsets(board, remaining, 3)) {
 			score = Math.max(score, 2);
+			solveData.counts.nakedTriple++;
 			continue;
 		}
 
 		// clear out hidden triples and try again
 		if (eliminateHiddenSubsets(board, searchResult.setMaps, 3)) {
 			score = Math.max(score, 2);
+			solveData.counts.hiddenTriple++;
 			continue;
 		}
 
 		// clear out naked quads and try again
 		if (eliminateNakedSubsets(board, remaining, 4)) {
 			score = Math.max(score, 3);
+			solveData.counts.nakedQuad++;
 			continue;
 		}
 
 		// clear out hidden quads and try again
 		if (eliminateHiddenSubsets(board, searchResult.setMaps, 4)) {
 			score = Math.max(score, 3);
+			solveData.counts.hiddenQuad++;
 			continue;
 		}
 
 		// clear out xwings and try again
 		if (eliminateSwordfish(board, numberMap, 2)) {
 			score = Math.max(score, 3);
+			solveData.counts.xwing++;
 			continue;
 		}
 
 		// clear out swordfish and try again
 		if (eliminateSwordfish(board, numberMap, 3)) {
 			score = Math.max(score, 3);
+			solveData.counts.swordfish++;
 			continue;
 		}
 
@@ -579,13 +595,29 @@ function solveBoard(board, goFast = false, checkUnique = false) {
 		score: null,
 		board: null,
 		isUnique: true,
+		counts: {
+			nakedSingle: 0,
+			hiddenSingle: 0,
+			lineGhost: 0,
+			boxGhost: 0,
+			nakedDouble: 0,
+			hiddenDouble: 0,
+			nakedTriple: 0,
+			hiddenTriple: 0,
+			nakedQuad: 0,
+			hiddenQuad: 0,
+			xwing: 0,
+			swordfish: 0,
+		},
 	};
+
 	solveRecursive(board.clone(), remaining, 0, solveData);
 
 	// return relevant solve data
 	return {
 		board: solveData.board,
 		difficulty: solveData.score,
+		counts: solveData.counts,
 		isUnique: solveData.isUnique,
 	};
 }
@@ -655,14 +687,87 @@ function punchHoles(solution) {
 		}
 	}
 
-	const difficulty = solveBoard(board).difficulty;
+	const {difficulty, counts} = solveBoard(board);
 
-	return {board, difficulty};
+	return {board, difficulty, counts};
+}
+
+function getRating(counts) {
+	return (
+		(counts.lineGhost + counts.boxGhost > 0 ? 1 : 0) +
+		(counts.nakedDouble + counts.hiddenDouble) * 2 +
+		(counts.nakedTriple + counts.hiddenTriple) * 3 +
+		(counts.nakedQuad + counts.hiddenQuad) * 4 +
+		(counts.xwing + counts.swordfish) * 4
+	);
+}
+
+function makeHarder(current, counts, solution) {
+	let best = current.clone();
+	let bestCounts = counts;
+
+	// if we already have a pretty hard puzzle,
+	// we can just go ahead and return it early
+	if (getRating(bestCounts) > 6) {
+		return {puzzle: best.values, difficulty: 3};
+	}
+
+	// search "nearby" puzzles for a better puzzle
+	for (let x = 0; x < 200; x++) {
+		// begin search from the current "best" puzzle
+		let board = best.clone();
+
+		// randomly poke or fill holes in the board to find
+		// "nearby" puzzles, as long as they are solvable
+		for (let i = 0; i < 50; i++) {
+			const nextBoard = board.clone();
+			const index = Math.floor(Math.random() * 41);
+
+			if (nextBoard.values[index]) {
+				nextBoard.values[index] = null;
+				nextBoard.values[80 - index] = null;
+			} else {
+				nextBoard.values[index] = solution.values[index];
+				nextBoard.values[80 - index] = solution.values[80 - index];
+			}
+
+			// if the next board still has a unique solution,
+			// keep the change and continue searching
+			const result = solveBoard(nextBoard, false, true);
+			if (result.isUnique) {
+				board = nextBoard;
+
+				// check if the puzzle is also an expert (diff=3) puzzle,
+				// with a better rank than the current best puzzle,
+				// and update it if so
+				const rating = getRating(result.counts);
+				const bestRating = getRating(bestCounts);
+				if (result.difficulty === 3 && rating > bestRating) {
+					best = board;
+					bestCounts = result.counts;
+				}
+			}
+		}
+	}
+
+	// as long as we have a decent amount of advanced techniques
+	// at play in the puzzle, we succeeded in making it difficult
+	if (getRating(bestCounts) > 6) {
+		return {puzzle: best.values, difficulty: 3};
+	}
+
+	// otherwise, we'll consider the hardening a failure, and
+	// just discard the puzzle and create a new one from scratch
+	return makePuzzle();
 }
 
 function makePuzzle() {
 	const solution = createSolution();
-	const {board, difficulty} = punchHoles(solution);
+	const {board, difficulty, counts} = punchHoles(solution);
+
+	if (difficulty === 3) {
+		return makeHarder(board, counts, solution);
+	}
 
 	return {puzzle: board.values, difficulty};
 }

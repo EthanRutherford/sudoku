@@ -2,7 +2,7 @@ const DIFFICULTIES = require("../logic/difficulties");
 
 function openDatabase() {
 	return new Promise((resolve, reject) => {
-		const request = indexedDB.open("sudoku", 7);
+		const request = indexedDB.open("sudoku", 8);
 
 		request.onupgradeneeded = function(event) {
 			const database = event.target.result;
