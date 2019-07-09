@@ -28,7 +28,8 @@ module.exports = function About() {
 			track of more than the most recent patch number. Each change is simply
 			listed in reverse-chronological order.
 		`),
-		j({div: styles.number}, "ver 1.6.1"),
+		j({div: styles.number}, "ver 1.6.2"),
+		j({div: styles.change}, `improve selected value highlighting`),
 		j({div: styles.change}, `improve difficulty of expert puzzles`),
 		j({div: styles.number}, "ver 1.6.0"),
 		j({div: styles.change}, `split expert into expert and insane`),

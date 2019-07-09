@@ -396,12 +396,16 @@ module.exports = class Game extends Component {
 				}
 
 				this.held.down = true;
-			} else if (action === ACTIONS.set && this.state.valueFirst) {
+			} else if (action === ACTIONS.set) {
 				event.preventDefault();
-				this.setValue(
-					this.state.selectedIndex,
-					this.state.selectedValue,
-				);
+				if (this.state.valueFirst) {
+					this.setValue(
+						this.state.selectedIndex,
+						this.state.selectedValue,
+					);
+				} else {
+					this.setSelectedIndex(this.state.selectedIndex);
+				}
 			}
 		} else if ([
 			ACTIONS.next, ACTIONS.prev,
@@ -451,6 +455,10 @@ module.exports = class Game extends Component {
 			this.setValue(selectedIndex, this.state.selectedValue);
 		} else {
 			this.setState({selectedIndex, invalidIndices: null});
+			const selectedValue = this.props.puzzle[selectedIndex] || this.state.answers[selectedIndex];
+			if (!fromKeyboard && (selectedIndex == null || selectedValue)) {
+				this.setState({selectedValue});
+			}
 		}
 	}
 	setSelectedValue(selectedValue, noteOverride = false) {
@@ -539,6 +547,7 @@ module.exports = class Game extends Component {
 
 			answers[index] = value;
 			this.setState({
+				selectedValue: value,
 				answers,
 				notes,
 				counts: countValues(puzzle, answers),
@@ -618,7 +627,7 @@ module.exports = class Game extends Component {
 			}]),
 			j([Controls, {
 				counts: this.state.counts,
-				selectedValue: this.state.selectedValue,
+				selectedValue: this.state.valueFirst && this.state.selectedValue,
 				noteMode: this.state.noteMode,
 				valueFirst: this.state.valueFirst,
 				setSelectedValue: this.setSelectedValue,
