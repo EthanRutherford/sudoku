@@ -3,7 +3,7 @@ const styles = require("../styles/about");
 
 module.exports = function About() {
 	return j({div: styles.about}, [
-		j({h2: styles.title}, "Sudoku ver 1.6.1"),
+		j({h2: styles.title}, "Sudoku ver 1.6.2"),
 		j({div: styles.separator}),
 		j({div: styles.description}, [
 			j("p", `
