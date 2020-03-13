@@ -575,6 +575,9 @@ module.exports = class Game extends Component {
 			const notes = [...this.state.notes];
 			const undoStack = [...state.undoStack];
 			const unChange = applyChange(answers, notes, undoStack);
+			
+			storeAnswers(answers);
+			storeNotes(notes);
 
 			return {
 				answers,
@@ -596,6 +599,9 @@ module.exports = class Game extends Component {
 			const notes = [...this.state.notes];
 			const redoStack = [...state.redoStack];
 			const unChange = applyChange(answers, notes, redoStack);
+			
+			storeAnswers(answers);
+			storeNotes(notes);
 
 			return {
 				answers,
