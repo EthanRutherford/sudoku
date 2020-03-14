@@ -464,7 +464,7 @@ module.exports = class Game extends Component {
 	setSelectedValue(selectedValue, noteOverride = false) {
 		if (this.state.valueFirst) {
 			this.setState({selectedValue, invalidIndices: null});
-		} else {
+		} else if (this.state.selectedIndex != null) {
 			this.setValue(this.state.selectedIndex, selectedValue, noteOverride);
 		}
 	}
