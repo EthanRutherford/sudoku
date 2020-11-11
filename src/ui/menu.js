@@ -54,7 +54,7 @@ module.exports = function Menu(props) {
 						devClicks.timer = setTimeout(() => devClicks.count = 0, 200);
 					},
 				}}, [
-					"© 2019", j("br"), "Ethan Rutherford",
+					"© " + new Date().getFullYear(), j("br"), "Ethan Rutherford",
 				]),
 			]),
 		]),
