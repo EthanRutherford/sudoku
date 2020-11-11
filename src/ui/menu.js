@@ -1,10 +1,13 @@
+const {useRef} = require("react");
 const j = require("react-jenny");
 const DIFFICULTIES = require("../logic/difficulties");
 const {getStoredGame} = require("../logic/game-store");
+const {getIsDeveloper, setIsDeveloper} = require("./dev-mode/dev-util");
 const styles = require("../styles/menu");
 
 module.exports = function Menu(props) {
 	const canResume = getStoredGame().puzzle != null;
+	const {current: devClicks} = useRef({count: 0, timer: null});
 
 	return j({div: styles.menu}, [
 		j({div: styles.columns}, [
@@ -37,6 +40,19 @@ module.exports = function Menu(props) {
 				}}, "about"),
 				j({div: {
 					className: styles.copyright,
+					onClick: () => {
+						if (getIsDeveloper()) {
+							props.openDevtools();
+							return;
+						}
+
+						if (++devClicks.count === 10) {
+							setIsDeveloper(true);
+						}
+
+						clearTimeout(devClicks.timer);
+						devClicks.timer = setTimeout(() => devClicks.count = 0, 200);
+					},
 				}}, [
 					"© 2019", j("br"), "Ethan Rutherford",
 				]),

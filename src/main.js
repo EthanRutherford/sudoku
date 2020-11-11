@@ -1,7 +1,7 @@
 const {Component, createRef} = require("react");
 const {render} = require("react-dom");
 const j = require("react-jenny");
-const requestPuzzle = require("./generator/request-puzzle");
+const {requestPuzzle} = require("./generator/request-puzzle");
 const {storeDifficulty} = require("./logic/game-store");
 const {saveHighScore} = require("./logic/high-scores");
 const {getStoredGame} = require("./logic/game-store");
@@ -12,6 +12,7 @@ const Records = require("./ui/records");
 const Results = require("./ui/results");
 const Options = require("./ui/options");
 const About = require("./ui/about");
+const Devtools = require("./ui/dev-mode/devtools");
 const Warning = require("./ui/warning");
 require("./pwa/init-service-worker");
 require("./view-height");
@@ -26,6 +27,7 @@ const PAGES = {
 	records: 4,
 	options: 5,
 	about: 6,
+	devtools: 7,
 };
 
 const INITIAL_STATE = {
@@ -89,6 +91,7 @@ class App extends Component {
 		this.openRecords = this.openRecords.bind(this);
 		this.openOptions = this.openOptions.bind(this);
 		this.openAbout = this.openAbout.bind(this);
+		this.openDevtools = this.openDevtools.bind(this);
 	}
 	requestPuzzle(difficulty) {
 		if (this.loading) return;
@@ -178,6 +181,11 @@ class App extends Component {
 			history.pushState({page: PAGES.about}, null, "#about");
 		});
 	}
+	openDevtools() {
+		this.setState({page: PAGES.devtools}, () => {
+			history.pushState({page: PAGES.devtools}, null, "#devtools");
+		});
+	}
 	render() {
 		const {
 			page,
@@ -261,6 +269,13 @@ class App extends Component {
 			];
 		}
 
+		if (page === PAGES.devtools) {
+			return [
+				j([Header, {showBack: true, key: 1}]),
+				j([Devtools, {key: 2}]),
+			];
+		}
+
 		return [
 			j([Header, {key: 1}]),
 			j([Menu, {
@@ -269,6 +284,7 @@ class App extends Component {
 				openRecords: this.openRecords,
 				openOptions: this.openOptions,
 				openAbout: this.openAbout,
+				openDevtools: this.openDevtools,
 				key: 2,
 			}]),
 			this.state.warning && j([Warning, {

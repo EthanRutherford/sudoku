@@ -1,0 +1,40 @@
+@import "../../styles/variables.css";
+
+.dev {
+	margin: auto;
+	padding: 20px 0;
+	width: var(--standard-width);
+	min-width: var(--standard-min-width);
+}
+
+.header {
+	font-size: var(--huge);
+	margin-bottom: 20px;
+}
+
+.heading {
+	font-size: var(--large);
+	margin-bottom: 10px;
+}
+
+.counts {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-auto-flow: column;
+	margin-bottom: 20px;
+	width: 260px;
+}
+
+.diff {
+	grid-column: 1;
+}
+
+.count {
+	grid-column: 2;
+}
+
+.saved-game {
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	font-family: monospace;
+}
