@@ -10,11 +10,19 @@
 }
 
 .board {
+	position: relative;
+	border: 4px solid var(--carbon);
+	background: var(--carbon);
+	user-select: none;
+}
+
+.grid, .overlay-grid {
+	position: absolute;
+	width: 100%;
+	height: 100%;
 	display: grid;
 	grid-template-columns: repeat(8, 1fr) minmax(calc(100% / 9), auto);
 	grid-template-rows: repeat(8, 1fr) minmax(calc(100% / 9), auto);
-	border: 4px solid var(--carbon);
-	user-select: none;
 }
 
 .cell {
@@ -28,59 +36,29 @@
 	cursor: pointer;
 	overflow: hidden;
 }
-.cell:not(:nth-child(9n)) {
-	border-right: 1px solid var(--carbon);
+.cell, .overlay-cell {
+	border-style: solid;
+	border-color: var(--carbon);
 }
-.cell:not(:nth-last-child(-n+9)) {
-	border-bottom: 1px solid var(--carbon);
+.cell:not(:nth-child(9n)), .overlay-cell:not(:nth-child(9n)) {
+	border-right-width: 1px;
 }
-.cell:nth-child(3n + 1) {
-	border-left: 1px solid var(--carbon);
+.cell:not(:nth-last-child(-n+9)), .overlay-cell:not(:nth-last-child(-n+9)) {
+	border-bottom-width: 1px;
+}
+.cell:nth-child(3n + 1), .overlay-cell:nth-child(3n + 1) {
+	border-left-width: 1px;
 }
 .cell:nth-child(n+28):not(:nth-child(n+37)),
-.cell:nth-child(n+55):not(:nth-child(n+64)) {
-	border-top: 1px solid var(--carbon);
+.overlay-cell:nth-child(n+28):not(:nth-child(n+37)),
+.cell:nth-child(n+55):not(:nth-child(n+64)),
+.overlay-cell:nth-child(n+55):not(:nth-child(n+64)) {
+	border-top-width: 1px;
 }
 
 .initial-value {
 	font-weight: bold;
 	background-color: var(--ash);
-}
-
-.selected-index:before {
-	content: "";
-	position: absolute;
-	box-sizing: border-box;
-	width: calc(100%);
-	height: calc(100%);
-	border: 3px solid var(--carbon);
-	z-index: 5;
-}
-.selected-index:nth-child(3n):before {
-	border-right-width: 2px;
-}
-.selected-index:nth-child(3n+1):before {
-	border-left-width: 2px;
-}
-.selected-index:nth-child(n+19):not(:nth-child(n+28)):before,
-.selected-index:nth-child(n+46):not(:nth-child(n+55)):before {
-	border-bottom-width: 2px;
-}
-.selected-index:nth-child(n+28):not(:nth-child(n+37)):before,
-.selected-index:nth-child(n+55):not(:nth-child(n+64)):before {
-	border-top-width: 2px;
-}
-.selected-index:nth-child(-n+9):before {
-	border-top-width: 0;
-}
-.selected-index:nth-last-child(-n+9):before {
-	border-bottom-width: 0;
-}
-.selected-index:nth-child(9n):before {
-	border-right-width: 0;
-}
-.selected-index:nth-child(9n+1):before {
-	border-left-width: 0;
 }
 
 .hovered-neighbors {
@@ -136,6 +114,41 @@
 	background-image: radial-gradient(closest-side, var(--green-steel-light), transparent);
 	color: var(--green-steel);
 	z-index: 1;
+}
+
+.overlay-grid {
+	pointer-events: none;
+	z-index: 5;
+}
+
+.selected-index.selected-index {
+	border-width: 3px 4px 4px 3px;
+}
+.selected-index:nth-child(3n) {
+	border-right-width: 3px;
+}
+.selected-index:nth-child(3n+1) {
+	border-left-width: 3px;
+}
+.selected-index:nth-child(n+19):not(:nth-child(n+28)),
+.selected-index:nth-child(n+46):not(:nth-child(n+55)) {
+	border-bottom-width: 3px;
+}
+.selected-index:nth-child(n+28):not(:nth-child(n+37)),
+.selected-index:nth-child(n+55):not(:nth-child(n+64)) {
+	border-top-width: 3px;
+}
+.selected-index:nth-child(-n+9) {
+	border-top-width: 0;
+}
+.selected-index:nth-last-child(-n+9) {
+	border-bottom-width: 0;
+}
+.selected-index:nth-child(9n) {
+	border-right-width: 0;
+}
+.selected-index:nth-child(9n+1) {
+	border-left-width: 0;
 }
 
 .controls {

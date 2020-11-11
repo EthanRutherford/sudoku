@@ -75,49 +75,56 @@ function Board(props) {
 	return j({div: {
 		className: styles.board,
 		onMouseOut: () => setHoveredIndex(null, null),
-	}}, puzzle.map((value, index) => {
-		const note = notes[index];
+	}}, [
+		j({div: styles.grid}, puzzle.map((value, index) => {
+			const note = notes[index];
 
-		let className = styles.cell;
-		if (value) {
-			className += ` ${styles.initialValue}`;
-		} else {
-			value = answers[index];
-		}
-		if (index === selectedIndex) {
-			className += ` ${styles.selectedIndex}`;
-		}
-		if (invalidIndices && invalidIndices.has(index)) {
-			className += ` ${styles.error}`;
-		}
-		if (guideValues && value && value === hoveredValue) {
-			className += ` ${styles.hoveredValue}`;
-		}
-		if (
-			guideNeighbors && (
-				indexToRow[index] === indexToRow[hoveredIndex] ||
-				indexToColumn[index] === indexToColumn[hoveredIndex] ||
-				indexToBox[index] === indexToBox[hoveredIndex]
-			)
-		) {
-			className += ` ${styles.hoveredNeighbors}`;
-		}
+			let className = styles.cell;
+			if (value) {
+				className += ` ${styles.initialValue}`;
+			} else {
+				value = answers[index];
+			}
+			if (invalidIndices && invalidIndices.has(index)) {
+				className += ` ${styles.error}`;
+			}
+			if (guideValues && value && value === hoveredValue) {
+				className += ` ${styles.hoveredValue}`;
+			}
+			if (
+				guideNeighbors && (
+					indexToRow[index] === indexToRow[hoveredIndex] ||
+					indexToColumn[index] === indexToColumn[hoveredIndex] ||
+					indexToBox[index] === indexToBox[hoveredIndex]
+				)
+			) {
+				className += ` ${styles.hoveredNeighbors}`;
+			}
 
-		return j({div: {
-			className,
-			onMouseOver: () => setHoveredIndex(index, value),
-			onClick: () => setSelectedIndex(index),
-		}}, [
-			value,
-			numbers.map((number) => note.has(number) && j({div: {
-				className: noteClass(
-					number,
-					guideNotes && number === hoveredValue,
-				),
-				key: number,
-			}}, number)),
-		]);
-	}));
+			return j({div: {
+				className,
+				onMouseOver: () => setHoveredIndex(index, value),
+				onClick: () => setSelectedIndex(index),
+			}}, [
+				value,
+				numbers.map((number) => note.has(number) && j({div: {
+					className: noteClass(
+						number,
+						guideNotes && number === hoveredValue,
+					),
+					key: number,
+				}}, number)),
+			]);
+		})),
+		j({div: styles.overlayGrid}, puzzle.map((_, index) => {
+			let className = styles.overlayCell;
+			if (index === selectedIndex) {
+				className += ` ${styles.selectedIndex}`;
+			}
+
+			return j({div: className});
+		})),
+	]);
 }
 
 function Controls(props) {
