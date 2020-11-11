@@ -39,4 +39,14 @@ async function requestPuzzle(difficulty) {
 	return null;
 }
 
-module.exports = requestPuzzle;
+async function requestCounts() {
+	const db = await openDatabase();
+	return await Promise.all(DIFFICULTIES.map(
+		(difficulty) => countPuzzles(db, difficulty),
+	));
+}
+
+module.exports = {
+	requestPuzzle,
+	requestCounts,
+};

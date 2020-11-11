@@ -69,10 +69,10 @@ function countPuzzles(db, difficulty) {
 		const transaction = db.transaction([difficulty]);
 		const objectStore = transaction.objectStore(difficulty);
 
-		const request = objectStore.getAllKeys();
+		const request = objectStore.count();
 		request.onerror = reject;
 		request.onsuccess = function(event) {
-			resolve(event.target.result.length);
+			resolve(event.target.result);
 		};
 	});
 }
