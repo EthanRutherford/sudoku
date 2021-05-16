@@ -347,11 +347,11 @@ module.exports = class Game extends Component {
 			this.undo();
 		} else if (action === ACTIONS.redo) {
 			this.redo();
+		} else if (action > 0 && action < 10) {
+			event.preventDefault();
+			this.setSelectedValue(action, event.ctrlKey);
 		} else if (selectedIndex != null) {
-			if (action > 0 && action < 10) {
-				event.preventDefault();
-				this.setSelectedValue(action, event.ctrlKey);
-			} else if (action === ACTIONS.delete) {
+			if (action === ACTIONS.delete) {
 				this.setSelectedValue(null);
 			} else if (action === ACTIONS.prev) {
 				event.preventDefault();
